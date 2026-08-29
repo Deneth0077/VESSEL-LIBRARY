@@ -52,8 +52,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ message: 'Vessel not found.' }, { status: 404 });
     }
 
-    if (!canManageVessel(user, vessel.createdBy)) {
-      return NextResponse.json({ message: 'Forbidden. Only creator or admin can update this vessel.' }, { status: 403 });
+    if (user.status !== 'APPROVED') {
+      return NextResponse.json({ message: 'Forbidden. Approved account required.' }, { status: 403 });
     }
 
     Object.assign(vessel, parseResult.data, {

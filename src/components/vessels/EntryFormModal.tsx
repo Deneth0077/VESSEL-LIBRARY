@@ -151,19 +151,21 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Wrench className="w-3.5 h-3.5 text-teal-600" />
-              <span>Solutions / Recommended Actions (Optional)</span>
-            </label>
-            <textarea
-              value={solution}
-              onChange={(e) => setSolution(e.target.value)}
-              rows={3}
-              placeholder="Enter resolution, corrective action taken, or recommended solution..."
-              className="w-full p-3.5 bg-teal-50/40 border border-teal-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 font-sans"
-            />
-          </div>
+          {section === 'OPERATIONAL_CHALLENGE' && (
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Wrench className="w-3.5 h-3.5 text-teal-600" />
+                <span>Solutions / Recommended Actions (Optional)</span>
+              </label>
+              <textarea
+                value={solution}
+                onChange={(e) => setSolution(e.target.value)}
+                rows={3}
+                placeholder="Enter resolution, corrective action taken, or recommended solution..."
+                className="w-full p-3.5 bg-teal-50/40 border border-teal-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 font-sans"
+              />
+            </div>
+          )}
 
           <div>
             <div className="flex items-center justify-between mb-2">

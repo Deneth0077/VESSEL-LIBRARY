@@ -14,7 +14,7 @@ interface BasicInformationProps {
 }
 
 export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, currentUser, onUpdateVessel }) => {
-  const canModify = canManageVessel(currentUser, vessel.createdBy);
+  const canModify = !!currentUser && currentUser.status === 'APPROVED';
   const [uploading, setUploading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
