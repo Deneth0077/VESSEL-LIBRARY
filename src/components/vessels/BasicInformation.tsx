@@ -5,7 +5,7 @@ import { IVessel, IPhotograph, IUser } from '@/types';
 import { PhotoGallery } from './PhotoGallery';
 import { EditVesselModal } from './EditVesselModal';
 import { canManageVessel } from '@/lib/auth/rbac';
-import { Camera, Loader2, Info, Edit, Ruler, Upload } from 'lucide-react';
+import { Camera, Loader2, Info, Edit, Ruler, Upload, AlertCircle } from 'lucide-react';
 
 interface BasicInformationProps {
   vessel: IVessel;

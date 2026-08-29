@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { IVessel, IVesselEntry, IUser, SectionType } from '@/types';
 import { PhotoGallery } from './PhotoGallery';
-import { X, Printer, Loader2, FileText, CheckCircle } from 'lucide-react';
+import { X, Printer, Loader2, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface VesselFullDetailsModalProps {
   isOpen: boolean;
