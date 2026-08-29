@@ -24,16 +24,18 @@ export function canManageVessel(user?: IUser | null, vesselCreatedBy?: string): 
 export function canEditOrDeleteEntry(user?: IUser | null, entryCreatedBy?: string): boolean {
   if (!user || user.status !== 'APPROVED') return false;
   if (user.role === 'ADMIN') return true;
-  if (!entryCreatedBy) return false;
+  if (!entryCreatedBy) return true;
 
   const userIdStr = user._id ? String(user._id).trim().toLowerCase() : '';
   const empIdStr = user.employeeId ? String(user.employeeId).trim().toLowerCase() : '';
   const emailStr = user.email ? String(user.email).trim().toLowerCase() : '';
+  const fullNameStr = user.fullName ? String(user.fullName).trim().toLowerCase() : '';
   const createdByStr = String(entryCreatedBy).trim().toLowerCase();
 
   return (
     (userIdStr !== '' && userIdStr === createdByStr) ||
     (empIdStr !== '' && empIdStr === createdByStr) ||
-    (emailStr !== '' && emailStr === createdByStr)
+    (emailStr !== '' && emailStr === createdByStr) ||
+    (fullNameStr !== '' && fullNameStr === createdByStr)
   );
 }

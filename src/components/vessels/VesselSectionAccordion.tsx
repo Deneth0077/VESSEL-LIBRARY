@@ -190,6 +190,7 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
         section={section}
         sectionTitle={title}
         initialEntry={editingEntry}
+        currentUser={currentUser}
         onClose={() => {
           setModalOpen(false);
           setEditingEntry(null);
