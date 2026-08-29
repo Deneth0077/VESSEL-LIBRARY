@@ -1,17 +1,20 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { IVessel, IPhotograph } from '@/types';
+import { IVessel, IPhotograph, IUser } from '@/types';
 import { PhotoGallery } from './PhotoGallery';
 import { EditVesselModal } from './EditVesselModal';
+import { canManageVessel } from '@/lib/auth/rbac';
 import { Camera, Loader2, Info, Edit, Ruler, Upload } from 'lucide-react';
 
 interface BasicInformationProps {
   vessel: IVessel;
+  currentUser?: IUser | null;
   onUpdateVessel?: () => void;
 }
 
-export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, onUpdateVessel }) => {
+export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, currentUser, onUpdateVessel }) => {
+  const canModify = canManageVessel(currentUser, vessel.createdBy);
   const [uploading, setUploading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -114,57 +117,60 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, onUp
           <h2 className="text-xs font-bold uppercase tracking-wider font-sans truncate">1. Basic Information & Specs</h2>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => setShowEditModal(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold transition-all min-h-[36px] cursor-pointer"
-            title="Edit & Update Vessel Specifications"
-          >
-            <Edit className="w-3.5 h-3.5 text-ocean-300" />
-            <span>Edit Specs</span>
-          </button>
+        {canModify && (
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold transition-all min-h-[36px] cursor-pointer"
+              title="Edit & Update Vessel Specifications"
+            >
+              <Edit className="w-3.5 h-3.5 text-ocean-300" />
+              <span>Edit Specs</span>
+            </button>
 
-          {/* Direct Camera Capture Button */}
-          <button
-            type="button"
-            onClick={() => cameraInputRef.current?.click()}
-            disabled={uploading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ocean-600 hover:bg-ocean-700 active:scale-95 text-white text-xs font-bold transition-all min-h-[36px] shrink-0 cursor-pointer"
-            title="Take Photo using Camera"
-          >
-            {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
-            <span>Take Photo</span>
-          </button>
+            {/* Direct Camera Capture Button */}
+            <button
+              type="button"
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={uploading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ocean-600 hover:bg-ocean-700 active:scale-95 text-white text-xs font-bold transition-all min-h-[36px] shrink-0 cursor-pointer"
+              title="Take Photo using Camera"
+            >
+              {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+              <span>Take Photo</span>
+            </button>
 
-          {/* Gallery File Select Button (Up to 5) */}
-          <button
-            type="button"
-            onClick={() => galleryInputRef.current?.click()}
-            disabled={uploading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy-800 hover:bg-navy-700 active:scale-95 text-white text-xs font-bold transition-all min-h-[36px] shrink-0 cursor-pointer border border-navy-700"
-            title="Upload up to 5 Photos"
-          >
-            <Upload className="w-3.5 h-3.5 text-ocean-300" />
-            <span>Upload (Max 5)</span>
-          </button>
+            {/* Gallery File Select Button (Up to 5) */}
+            <button
+              type="button"
+              onClick={() => galleryInputRef.current?.click()}
+              disabled={uploading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy-800 hover:bg-navy-700 active:scale-95 text-white text-xs font-bold transition-all min-h-[36px] shrink-0 cursor-pointer border border-navy-700"
+              title="Upload up to 5 Photos"
+            >
+              <Upload className="w-3.5 h-3.5 text-ocean-300" />
+              <span>Upload (Max 5)</span>
+            </button>
 
-          {/* Hidden Inputs */}
-          <input
-            ref={cameraInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handlePhotoUpload}
-            className="hidden"
-          />
-          <input
-            ref={galleryInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handlePhotoUpload}
-            className="hidden"
-          />
+            {/* Hidden Inputs */}
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handlePhotoUpload}
+              className="hidden"
+            />
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handlePhotoUpload}
+              className="hidden"
+            />
+          </div>
+        )}
         </div>
       </div>
 
@@ -288,7 +294,7 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, onUp
         <PhotoGallery
           photos={vessel.mainPhotographs || []}
           title="Main Vessel Photographs"
-          canDelete={true}
+          canDelete={canModify}
           onDeletePhoto={handleDeleteMainPhoto}
         />
       </div>

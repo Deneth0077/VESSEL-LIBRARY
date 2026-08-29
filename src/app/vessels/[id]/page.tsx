@@ -182,7 +182,7 @@ export default function VesselProfilePage() {
 
       {/* SECTION 1: BASIC INFORMATION (AUTOMATICALLY VISIBLE BY DEFAULT) */}
       <div id="section-BASIC_INFO" className="scroll-mt-20">
-        <BasicInformation vessel={vessel} onUpdateVessel={fetchVesselAndUser} />
+        <BasicInformation vessel={vessel} currentUser={currentUser} onUpdateVessel={fetchVesselAndUser} />
       </div>
 
 

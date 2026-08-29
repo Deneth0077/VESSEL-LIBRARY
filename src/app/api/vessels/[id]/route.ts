@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db/connect';
 import Vessel from '@/models/Vessel';
 import VesselEntry from '@/models/VesselEntry';
 import { verifySession } from '@/lib/auth/session';
-import { isAdmin } from '@/lib/auth/rbac';
+import { isAdmin, canManageVessel } from '@/lib/auth/rbac';
 import { vesselSchema } from '@/lib/validation/schemas';
 import { logAudit } from '@/lib/audit/logger';
 
@@ -50,6 +50,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     if (!vessel) {
       return NextResponse.json({ message: 'Vessel not found.' }, { status: 404 });
+    }
+
+    if (!canManageVessel(user, vessel.createdBy)) {
+      return NextResponse.json({ message: 'Forbidden. Only creator or admin can update this vessel.' }, { status: 403 });
     }
 
     Object.assign(vessel, parseResult.data, {
