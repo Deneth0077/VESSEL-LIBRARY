@@ -60,6 +60,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       vesselId: params.id,
       section: parseResult.data.section,
       text: parseResult.data.text.trim(),
+      solution: parseResult.data.solution?.trim() || '',
       photographs: parseResult.data.photographs || [],
       createdBy: user._id.toString(),
       createdByName: user.fullName,

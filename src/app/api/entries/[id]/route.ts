@@ -36,6 +36,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (parseResult.data.text !== undefined) {
       entry.text = parseResult.data.text.trim();
     }
+    if (parseResult.data.solution !== undefined) {
+      entry.solution = parseResult.data.solution.trim();
+    }
     if (parseResult.data.photographs !== undefined) {
       entry.photographs = parseResult.data.photographs as any;
     }

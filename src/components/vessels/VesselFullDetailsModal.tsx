@@ -336,6 +336,17 @@ export const VesselFullDetailsModal: React.FC<VesselFullDetailsModalProps> = ({
                               {entry.text}
                             </p>
 
+                            {entry.solution && (
+                              <div className="p-3 bg-teal-50 border-l-4 border-l-teal-600 rounded-r-lg text-xs space-y-1">
+                                <span className="font-mono font-extrabold text-teal-900 uppercase tracking-widest text-[10px] block">
+                                  SOLUTION / CORRECTIVE ACTION TAKEN
+                                </span>
+                                <p className="text-slate-800 font-medium whitespace-pre-wrap leading-relaxed">
+                                  {entry.solution}
+                                </p>
+                              </div>
+                            )}
+
                             {entry.photographs && entry.photographs.length > 0 && (
                               <div className="pt-2 border-t border-slate-200">
                                 <PhotoGallery photos={entry.photographs} />

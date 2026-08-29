@@ -54,6 +54,7 @@ export const vesselSchema = z.object({
 export const vesselEntrySchema = z.object({
   section: z.enum(['STRUCTURE', 'STRUCTURAL_DAMAGE', 'OPERATIONAL_CHALLENGE', 'SPECIAL_NOTE', 'REMARK']),
   text: z.string().min(2, 'Description text is required'),
+  solution: z.string().optional(),
   photographs: z.array(photographSchema).optional(),
 });
 

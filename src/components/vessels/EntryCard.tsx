@@ -98,6 +98,18 @@ export const EntryCard: React.FC<EntryCardProps> = ({ entry, currentUser, onEdit
         )}
       </div>
 
+      {/* OPTIONAL SOLUTION / RECOMMENDED ACTION HIGHLIGHT BOX */}
+      {entry.solution && (
+        <div className="p-3.5 bg-teal-50/60 border-l-4 border-l-teal-600 rounded-r-xl text-xs space-y-1 font-sans">
+          <span className="font-extrabold text-teal-900 uppercase tracking-wider block text-[10px]">
+            💡 SOLUTION / ACTION TAKEN
+          </span>
+          <p className="text-slate-800 font-medium whitespace-pre-wrap leading-relaxed">
+            {entry.solution}
+          </p>
+        </div>
+      )}
+
       {/* RELATED PHOTOGRAPHS (IF ANY) */}
       {entry.photographs && entry.photographs.length > 0 && (
         <div className="pt-2">

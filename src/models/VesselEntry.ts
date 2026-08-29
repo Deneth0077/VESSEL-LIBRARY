@@ -25,6 +25,7 @@ const VesselEntrySchema: Schema = new Schema<IVesselEntryDocument>(
       index: true,
     },
     text: { type: String, required: true, trim: true },
+    solution: { type: String, default: '', trim: true },
     photographs: [PhotographSchema],
     createdBy: { type: String, required: true },
     createdByName: { type: String, required: true },

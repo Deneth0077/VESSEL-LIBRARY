@@ -64,6 +64,7 @@ export interface IVesselEntry {
   vesselId: string;
   section: SectionType;
   text: string;
+  solution?: string;
   photographs: IPhotograph[];
   createdBy: string;
   createdByName: string;
