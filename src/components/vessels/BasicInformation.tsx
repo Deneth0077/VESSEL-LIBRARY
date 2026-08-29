@@ -275,11 +275,14 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
 
       {/* Streamlined Additional Specifications & Notes */}
       {vessel.basicInformation && (
-        <div className="p-3.5 bg-slate-50 border-t border-slate-100 border-l-4 border-l-ocean-500">
-          <span className="text-[10px] font-bold text-ocean-800 uppercase tracking-widest block mb-0.5">
-            ADDITIONAL SPECIFICATIONS & NOTES
+        <div className="p-3.5 bg-red-50/80 border-t border-red-200 border-l-4 border-l-red-600 space-y-1">
+          <span className="text-[10px] font-extrabold text-red-700 uppercase tracking-widest block flex items-center gap-1.5 font-mono">
+            <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+            <span>ADDITIONAL SPECIFICATIONS & NOTES</span>
           </span>
-          <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">{vessel.basicInformation}</p>
+          <p className="text-red-800 text-xs sm:text-sm font-bold whitespace-pre-wrap leading-relaxed">
+            {vessel.basicInformation}
+          </p>
         </div>
       )}
 

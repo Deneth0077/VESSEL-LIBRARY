@@ -250,11 +250,12 @@ export const VesselFullDetailsModal: React.FC<VesselFullDetailsModalProps> = ({
 
             {/* Additional Specs & Notes */}
             {vessel.basicInformation && (
-              <div className="p-5 bg-slate-50 border-t border-slate-200 border-l-4 border-l-navy-700">
-                <span className="text-[10px] font-bold text-navy-900 uppercase tracking-widest block mb-1 font-mono">
-                  ADDITIONAL SPECIFICATIONS & NOTES
+              <div className="p-5 bg-red-50/90 border-t border-red-200 border-l-4 border-l-red-600 space-y-1">
+                <span className="text-[10px] font-extrabold text-red-700 uppercase tracking-widest block font-mono flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                  <span>ADDITIONAL SPECIFICATIONS & NOTES</span>
                 </span>
-                <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">{vessel.basicInformation}</p>
+                <p className="text-xs sm:text-sm text-red-900 font-bold whitespace-pre-wrap leading-relaxed">{vessel.basicInformation}</p>
               </div>
             )}
 
