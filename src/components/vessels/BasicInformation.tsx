@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { IVessel, IPhotograph } from '@/types';
 import { PhotoGallery } from './PhotoGallery';
 import { EditVesselModal } from './EditVesselModal';
-import { Camera, Loader2, Info, Edit, Ruler, Layers } from 'lucide-react';
+import { Camera, Loader2, Info, Edit, Ruler, Upload } from 'lucide-react';
 
 interface BasicInformationProps {
   vessel: IVessel;
@@ -14,33 +14,44 @@ interface BasicInformationProps {
 export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, onUpdateVessel }) => {
   const [uploading, setUploading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    const rawFiles = e.target.files;
+    if (!rawFiles || rawFiles.length === 0) return;
+
+    // Enforce 5 photos maximum per upload
+    let filesArray = Array.from(rawFiles);
+    if (filesArray.length > 5) {
+      alert('You can upload a maximum of 5 photographs at once. Processing the first 5 selected photos.');
+      filesArray = filesArray.slice(0, 5);
+    }
 
     try {
       setUploading(true);
       const newPhotos: IPhotograph[] = [...(vessel.mainPhotographs || [])];
 
-      for (let i = 0; i < files.length; i++) {
+      for (let i = 0; i < filesArray.length; i++) {
         const formData = new FormData();
-        formData.append('file', files[i]);
-        formData.append('caption', 'Main Vessel Photograph');
+        formData.append('file', filesArray[i]);
+        formData.append('caption', `Main Vessel Photograph ${newPhotos.length + 1}`);
 
         const res = await fetch('/api/photos', {
           method: 'POST',
           body: formData,
         });
 
+        const data = await res.json().catch(() => ({}));
+
         if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          alert(errData.message || 'Failed to upload photo. Only approved users can upload photos.');
+          alert(data.message || 'Failed to upload photograph.');
           return;
         }
 
-        const data = await res.json();
-        newPhotos.push(data.photo);
+        if (data.photo) {
+          newPhotos.push(data.photo);
+        }
       }
 
       const patchRes = await fetch(`/api/vessels/${vessel._id}`, {
@@ -58,9 +69,10 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, onUp
       if (onUpdateVessel) onUpdateVessel();
     } catch (err) {
       console.error('Failed uploading photo:', err);
-      alert('Error uploading photo. Please try again.');
+      alert('Error uploading photograph. Please try again.');
     } finally {
       setUploading(false);
+      if (e.target) e.target.value = '';
     }
   };
 
@@ -112,22 +124,47 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, onUp
             <span>Edit Specs</span>
           </button>
 
-          <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ocean-600 hover:bg-ocean-700 active:scale-95 text-white text-xs font-bold transition-all min-h-[36px] shrink-0 whitespace-nowrap">
-            {uploading ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Camera className="w-3.5 h-3.5" />
-            )}
-            <span>Add Photo</span>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              capture="environment"
-              onChange={handlePhotoUpload}
-              className="hidden"
-            />
-          </label>
+          {/* Direct Camera Capture Button */}
+          <button
+            type="button"
+            onClick={() => cameraInputRef.current?.click()}
+            disabled={uploading}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ocean-600 hover:bg-ocean-700 active:scale-95 text-white text-xs font-bold transition-all min-h-[36px] shrink-0 cursor-pointer"
+            title="Take Photo using Camera"
+          >
+            {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+            <span>Take Photo</span>
+          </button>
+
+          {/* Gallery File Select Button (Up to 5) */}
+          <button
+            type="button"
+            onClick={() => galleryInputRef.current?.click()}
+            disabled={uploading}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy-800 hover:bg-navy-700 active:scale-95 text-white text-xs font-bold transition-all min-h-[36px] shrink-0 cursor-pointer border border-navy-700"
+            title="Upload up to 5 Photos"
+          >
+            <Upload className="w-3.5 h-3.5 text-ocean-300" />
+            <span>Upload (Max 5)</span>
+          </button>
+
+          {/* Hidden Inputs */}
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handlePhotoUpload}
+            className="hidden"
+          />
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handlePhotoUpload}
+            className="hidden"
+          />
         </div>
       </div>
 
@@ -141,7 +178,7 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, onUp
 
           <div className="p-3 border-r border-b sm:border-b-0 border-slate-100">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">IMO NUMBER</span>
-            <span className="font-mono font-bold text-ocean-700 text-sm block mt-0.5">{vessel.imoNumber}</span>
+            <span className="font-mono font-bold text-ocean-700 text-sm block mt-0.5">{vessel.imoNumber || 'N/A'}</span>
           </div>
 
           <div className="p-3 border-r border-b sm:border-b-0 border-slate-100">
@@ -151,24 +188,24 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, onUp
 
           <div className="p-3">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">FLAG STATE</span>
-            <span className="font-semibold text-navy-800 text-xs block mt-0.5">{vessel.flag}</span>
+            <span className="font-semibold text-navy-800 text-xs block mt-0.5">{vessel.flag || 'N/A'}</span>
           </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 bg-white">
           <div className="p-3 border-r border-b sm:border-b-0 border-slate-100">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">OWNER / OPERATOR</span>
-            <span className="font-medium text-slate-800 text-xs block mt-0.5 truncate">{vessel.ownerOperator}</span>
+            <span className="font-medium text-slate-800 text-xs block mt-0.5 truncate">{vessel.ownerOperator || 'N/A'}</span>
           </div>
 
           <div className="p-3 border-r border-b sm:border-b-0 border-slate-100">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">CALL SIGN</span>
-            <span className="font-mono font-semibold text-navy-800 text-xs block mt-0.5">{vessel.callSign}</span>
+            <span className="font-mono font-semibold text-navy-800 text-xs block mt-0.5">{vessel.callSign || 'N/A'}</span>
           </div>
 
           <div className="p-3 border-r border-b sm:border-b-0 border-slate-100">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">YEAR BUILT</span>
-            <span className="font-semibold text-navy-800 text-xs block mt-0.5">{vessel.yearBuilt}</span>
+            <span className="font-semibold text-navy-800 text-xs block mt-0.5">{vessel.yearBuilt || 'N/A'}</span>
           </div>
 
           <div className="p-3">

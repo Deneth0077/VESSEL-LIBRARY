@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { IPhotograph } from '@/types';
 import { Maximize2, X, Camera, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 
@@ -18,10 +18,11 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
   canDelete = false,
 }) => {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   if (!photos || photos.length === 0) {
     return (
-      <div className="py-3 px-4 bg-slate-50 rounded-lg border border-dashed border-slate-200 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+      <div className="py-3 px-4 bg-slate-50 rounded-lg border border-dashed border-slate-200 text-center text-slate-400 text-xs flex items-center justify-center gap-2 font-sans">
         <Camera className="w-4 h-4 text-slate-300" />
         <span>No photographs attached.</span>
       </div>
@@ -30,18 +31,29 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
 
   const activePhoto = selectedIndex !== null ? photos[selectedIndex] : null;
 
+  const handleCloseLightbox = () => {
+    setSelectedIndex(null);
+
+    // Smoothly navigate back to the exact field / container location
+    if (containerRef.current) {
+      setTimeout(() => {
+        containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    }
+  };
+
   const handleDelete = (photoIdOrIndex: string | number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (onDeletePhoto) {
       onDeletePhoto(photoIdOrIndex);
       if (selectedIndex !== null) {
-        setSelectedIndex(null);
+        handleCloseLightbox();
       }
     }
   };
 
   return (
-    <div className="space-y-2">
+    <div ref={containerRef} className="space-y-2 font-sans">
       <div className="flex flex-wrap gap-2.5">
         {photos.map((photo, idx) => (
           <div
@@ -62,7 +74,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
               <button
                 type="button"
                 onClick={(e) => handleDelete(photo._id || idx, e)}
-                className="absolute top-1 right-1 p-1 bg-rose-600/90 hover:bg-rose-700 text-white rounded-full transition-all z-10 shadow-md active:scale-95"
+                className="absolute top-1 right-1 p-1 bg-rose-600/90 hover:bg-rose-700 text-white rounded-full transition-all z-10 shadow-md active:scale-95 cursor-pointer"
                 title="Delete photograph"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -78,9 +90,9 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
         ))}
       </div>
 
-      {/* Lightbox Modal */}
+      {/* Lightbox Modal with Back-Scroll Navigation */}
       {activePhoto && selectedIndex !== null && (
-        <div className="fixed inset-0 z-50 bg-navy-950/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-navy-950/90 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-in fade-in duration-150">
           <div className="absolute top-4 right-4 flex items-center gap-2 z-20">
             {(canDelete || onDeletePhoto) && (
               <button
@@ -94,8 +106,9 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
             )}
 
             <button
-              onClick={() => setSelectedIndex(null)}
+              onClick={handleCloseLightbox}
               className="p-2 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center"
+              title="Close Preview & Back to Field"
             >
               <X className="w-6 h-6" />
             </button>
@@ -105,14 +118,14 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
             <>
               <button
                 onClick={() => setSelectedIndex((selectedIndex - 1 + photos.length) % photos.length)}
-                className="absolute left-4 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10"
+                className="absolute left-4 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10 cursor-pointer"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
 
               <button
                 onClick={() => setSelectedIndex((selectedIndex + 1) % photos.length)}
-                className="absolute right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10"
+                className="absolute right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10 cursor-pointer"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>

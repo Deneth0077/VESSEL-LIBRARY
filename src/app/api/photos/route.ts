@@ -40,6 +40,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Photo uploaded successfully.', photo: photoMetadata }, { status: 201 });
   } catch (error: any) {
     console.error('Error uploading photo:', error);
-    return NextResponse.json({ message: 'Failed to upload photo.' }, { status: 500 });
+    return NextResponse.json({ message: error?.message || 'Failed to upload photo. Please try again.' }, { status: 500 });
   }
 }

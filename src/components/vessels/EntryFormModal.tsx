@@ -41,30 +41,36 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
   if (!isOpen) return null;
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    const rawFiles = e.target.files;
+    if (!rawFiles || rawFiles.length === 0) return;
+
+    let filesArray = Array.from(rawFiles);
+    if (filesArray.length > 5) {
+      setError('You can upload a maximum of 5 photographs at once. Processing the first 5 photos.');
+      filesArray = filesArray.slice(0, 5);
+    }
 
     try {
       setUploading(true);
       setError('');
       const uploadedList: IPhotograph[] = [...photos];
 
-      for (let i = 0; i < files.length; i++) {
+      for (let i = 0; i < filesArray.length; i++) {
         const formData = new FormData();
-        formData.append('file', files[i]);
-        formData.append('caption', `${sectionTitle} Photo`);
+        formData.append('file', filesArray[i]);
+        formData.append('caption', `${sectionTitle} Photo ${uploadedList.length + 1}`);
 
         const res = await fetch('/api/photos', {
           method: 'POST',
           body: formData,
         });
 
-        if (res.ok) {
-          const data = await res.json();
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.photo) {
           uploadedList.push(data.photo);
         } else {
-          const errData = await res.json();
-          setError(errData.message || 'Failed to upload photo');
+          setError(data.message || 'Failed to upload photograph.');
         }
       }
 
@@ -73,6 +79,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
       setError(err.message || 'Network error while uploading photo');
     } finally {
       setUploading(false);
+      if (e.target) e.target.value = '';
     }
   };
 
