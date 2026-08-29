@@ -13,13 +13,14 @@ try {
       if (trimmed && !trimmed.startsWith('#')) {
         const [key, ...valueParts] = trimmed.split('=');
         if (key && valueParts.length > 0) {
-          process.env[key.trim()] = valueParts.join('=').trim();
+          const val = valueParts.join('=').trim().replace(/^["']|["']$/g, '');
+          process.env[key.trim()] = val;
         }
       }
     }
   }
 } catch (e) {
-  // Ignore
+  // Ignore env read error
 }
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://denethc545_db_user:gCKm52BQXvCkde2D@cluster0.ghh0nv3.mongodb.net/vessels_db?retryWrites=true&w=majority';
@@ -31,6 +32,9 @@ async function cleanDatabase() {
     console.log('Connected to MongoDB successfully.');
 
     const db = mongoose.connection.db;
+    if (!db) {
+      throw new Error('MongoDB connection established but database instance is undefined.');
+    }
 
     // Delete all vessels
     const vesselResult = await db.collection('vessels').deleteMany({});
@@ -81,9 +85,13 @@ async function cleanDatabase() {
     }
 
     console.log('\n✅ Database cleanup completed successfully! All sample data removed.');
+    await mongoose.disconnect();
     process.exit(0);
   } catch (error) {
     console.error('❌ Error cleaning database:', error);
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
     process.exit(1);
   }
 }
