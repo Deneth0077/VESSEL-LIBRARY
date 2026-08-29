@@ -68,7 +68,23 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error('Registration error:', error);
-    return NextResponse.json({ message: 'An internal server error occurred.' }, { status: 500 });
+    console.error('Registration error details:', error);
+
+    // Handle MongoDB duplicate key error (11000)
+    if (error?.code === 11000) {
+      const duplicateField = Object.keys(error.keyPattern || {})[0];
+      if (duplicateField === 'employeeId') {
+        return NextResponse.json({ message: 'This Employee ID is already registered.' }, { status: 409 });
+      }
+      if (duplicateField === 'email') {
+        return NextResponse.json({ message: 'This Email address is already registered.' }, { status: 409 });
+      }
+      return NextResponse.json({ message: 'Account with these details already exists.' }, { status: 409 });
+    }
+
+    return NextResponse.json(
+      { message: error?.message || 'An error occurred during registration. Please try again.' },
+      { status: 500 }
+    );
   }
 }
