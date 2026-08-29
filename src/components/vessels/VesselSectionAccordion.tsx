@@ -2,7 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { SectionType, IVesselEntry, IUser } from '@/types';
-import { ChevronDown, ChevronRight, Plus, Wrench, ShieldAlert, AlertTriangle, FileText, MessageSquare, Loader2 } from 'lucide-react';
+import {
+  Layers,
+  ShieldAlert,
+  Compass,
+  AlertCircle,
+  ClipboardList,
+  ChevronDown,
+  ChevronRight,
+  Plus,
+  Wrench,
+  Loader2,
+} from 'lucide-react';
 import { EntryCard } from './EntryCard';
 import { EntryFormModal } from './EntryFormModal';
 
@@ -39,12 +50,32 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<IVesselEntry | null>(null);
 
-  const icons: Record<SectionType, React.ReactNode> = {
-    STRUCTURE: <Wrench className="w-5 h-5 text-ocean-600" />,
-    STRUCTURAL_DAMAGE: <ShieldAlert className="w-5 h-5 text-rose-600" />,
-    OPERATIONAL_CHALLENGE: <AlertTriangle className="w-5 h-5 text-amber-600" />,
-    SPECIAL_NOTE: <FileText className="w-5 h-5 text-teal-600" />,
-    REMARK: <MessageSquare className="w-5 h-5 text-navy-600" />,
+  const iconBadges: Record<SectionType, React.ReactNode> = {
+    STRUCTURE: (
+      <span className="p-2.5 rounded-xl bg-ocean-50 border border-ocean-200 text-ocean-600 shadow-xs flex items-center justify-center shrink-0">
+        <Layers className="w-5 h-5 stroke-[2.2]" />
+      </span>
+    ),
+    STRUCTURAL_DAMAGE: (
+      <span className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 shadow-xs flex items-center justify-center shrink-0">
+        <ShieldAlert className="w-5 h-5 stroke-[2.2]" />
+      </span>
+    ),
+    OPERATIONAL_CHALLENGE: (
+      <span className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 shadow-xs flex items-center justify-center shrink-0">
+        <Compass className="w-5 h-5 stroke-[2.2]" />
+      </span>
+    ),
+    SPECIAL_NOTE: (
+      <span className="p-2.5 rounded-xl bg-red-100 border border-red-300 text-red-600 shadow-xs flex items-center justify-center shrink-0">
+        <AlertCircle className="w-5 h-5 stroke-[2.5] animate-pulse" />
+      </span>
+    ),
+    REMARK: (
+      <span className="p-2.5 rounded-xl bg-slate-100 border border-slate-300 text-navy-700 shadow-xs flex items-center justify-center shrink-0">
+        <ClipboardList className="w-5 h-5 stroke-[2.2]" />
+      </span>
+    ),
   };
 
   const fetchEntries = async () => {
@@ -111,23 +142,35 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
       {/* Accordion Header */}
       <button
         onClick={handleToggle}
-        className={`w-full px-5 py-4 flex items-center justify-between transition-colors text-left focus:outline-none min-h-[56px] ${
+        className={`w-full px-4 sm:px-5 py-4 flex items-center justify-between transition-colors text-left focus:outline-none min-h-[60px] ${
           isOpen ? 'bg-slate-50 border-b border-slate-200' : 'hover:bg-slate-50'
         }`}
       >
-        <div className="flex items-center gap-3">
-          <span className="p-2 rounded-lg bg-slate-100 border border-slate-200">{icons[section]}</span>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-            <h3 className="font-bold text-navy-800 text-base uppercase tracking-tight font-sans">{title}</h3>
+        <div className="flex items-center gap-3 min-w-0">
+          {iconBadges[section]}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0">
+            <h3
+              className={`font-extrabold text-sm sm:text-base uppercase tracking-tight font-sans truncate ${
+                section === 'SPECIAL_NOTE' ? 'text-red-600' : 'text-navy-900'
+              }`}
+            >
+              {title}
+            </h3>
             {entries.length > 0 && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-ocean-50 text-ocean-700 border border-ocean-200">
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border shrink-0 w-fit ${
+                  section === 'SPECIAL_NOTE'
+                    ? 'bg-red-50 text-red-700 border-red-200'
+                    : 'bg-ocean-50 text-ocean-700 border-ocean-200'
+                }`}
+              >
                 {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 ml-2">
           {isOpen ? (
             <ChevronDown className="w-5 h-5 text-navy-800" />
           ) : (
@@ -138,9 +181,11 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
 
       {/* Accordion Content Area */}
       {isOpen && (
-        <div className="p-5 space-y-4 bg-slate-50/50">
+        <div className="p-4 sm:p-5 space-y-4 bg-slate-50/50">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider min-w-0">
+            <span className={`text-xs font-bold uppercase tracking-wider min-w-0 ${
+              section === 'SPECIAL_NOTE' ? 'text-red-700' : 'text-slate-600'
+            }`}>
               {title} Records & Documentation
             </span>
             <button
@@ -148,7 +193,11 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
                 setEditingEntry(null);
                 setModalOpen(true);
               }}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-navy-800 hover:bg-navy-900 active:scale-95 text-white font-bold text-xs transition-all shadow-xs shrink-0 whitespace-nowrap cursor-pointer min-h-[42px] w-full sm:w-auto"
+              className={`inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-xs shrink-0 whitespace-nowrap cursor-pointer min-h-[44px] w-full sm:w-auto ${
+                section === 'SPECIAL_NOTE'
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-navy-800 hover:bg-navy-900 text-white'
+              }`}
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Add New Entry</span>

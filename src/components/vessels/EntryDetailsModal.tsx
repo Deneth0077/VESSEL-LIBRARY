@@ -126,11 +126,19 @@ export const EntryDetailsModal: React.FC<EntryDetailsModalProps> = ({
         {/* Scrollable Content Body */}
         <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-slate-50">
           {/* Main Description Card */}
-          <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-xs space-y-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block font-mono">
+          <div className={`p-4 sm:p-5 rounded-xl border shadow-xs space-y-2 ${
+            entry.section === 'SPECIAL_NOTE'
+              ? 'bg-red-50/90 border-red-300 border-l-4 border-l-red-600'
+              : 'bg-white border-slate-200'
+          }`}>
+            <span className={`text-[10px] font-extrabold uppercase tracking-widest block font-mono ${
+              entry.section === 'SPECIAL_NOTE' ? 'text-red-700' : 'text-slate-400'
+            }`}>
               OBSERVATION & DESCRIPTION TEXT
             </span>
-            <div className="text-slate-900 text-sm sm:text-base whitespace-pre-wrap leading-relaxed font-sans font-medium">
+            <div className={`text-sm sm:text-base whitespace-pre-wrap leading-relaxed font-sans ${
+              entry.section === 'SPECIAL_NOTE' ? 'text-red-900 font-bold' : 'text-slate-900 font-medium'
+            }`}>
               {entry.text}
             </div>
           </div>

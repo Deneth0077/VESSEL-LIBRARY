@@ -88,7 +88,13 @@ export const EntryCard: React.FC<EntryCardProps> = ({ entry, currentUser, onEdit
       >
         <div className="flex items-start justify-between gap-4">
           {/* TEXT ENTERED BY USER ALWAYS APPEARS FIRST */}
-          <div className="text-slate-800 text-sm sm:text-base whitespace-pre-wrap leading-relaxed flex-1 font-sans line-clamp-3 group-hover:text-navy-900 font-medium">
+          <div
+            className={`text-sm sm:text-base whitespace-pre-wrap leading-relaxed flex-1 font-sans break-words ${
+              entry.section === 'SPECIAL_NOTE'
+                ? 'text-red-700 font-bold bg-red-50/70 p-3.5 rounded-xl border-l-4 border-l-red-600'
+                : 'text-slate-800 font-medium group-hover:text-navy-900'
+            }`}
+          >
             {entry.text}
           </div>
 
