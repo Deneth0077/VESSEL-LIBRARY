@@ -34,7 +34,7 @@ async function getPhotoBufferAndExt(url: string): Promise<{ buffer: Buffer; exte
       return { buffer, extension: ext };
     }
 
-    // Remote HTTP URL
+    // Remote HTTP / Cloudinary URL
     if (url.startsWith('http://') || url.startsWith('https://')) {
       const res = await fetch(url);
       if (res.ok) {
@@ -67,7 +67,7 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
   const headerFill: ExcelJS.Fill = {
     type: 'pattern',
     pattern: 'solid',
-    fgColor: { argb: 'FF002B49' }, // Navy Blue header
+    fgColor: { argb: 'FF002B49' }, // Deep Navy Blue header
   };
 
   const headerFont: Partial<ExcelJS.Font> = {
@@ -118,14 +118,20 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
     { header: 'Lashing Bridges', key: 'lashingBridges', width: 16 },
     { header: 'Bridge Height', key: 'lashingBridgeHeight', width: 16 },
     { header: 'Additional Specs & Notes', key: 'basicInformation', width: 35 },
-    { header: 'Main Photograph', key: 'mainPhotoCol', width: 26 },
+    { header: 'Main Photograph (Embedded)', key: 'mainPhotoCol', width: 26 },
+    { header: 'Photo Direct Links (URLs)', key: 'mainPhotoUrls', width: 38 },
     { header: 'Photo Count', key: 'photoCount', width: 14 },
     { header: 'Created Date', key: 'createdDate', width: 18 },
   ];
 
   for (let i = 0; i < vessels.length; i++) {
     const v = vessels[i];
-    const rowIndex = i + 2; // 1-indexed header is row 1
+    const rowIndex = i + 2;
+
+    const mainPhotoUrlLinks = v.mainPhotographs && v.mainPhotographs.length > 0
+      ? v.mainPhotographs.map((p, idx) => `Main Photo ${idx + 1}: ${p.url}`).join('\n')
+      : 'No Main Photos';
+
     const row = sheet1.addRow({
       vesselName: v.vesselName,
       imoNumber: v.imoNumber,
@@ -143,6 +149,7 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
       lashingBridgeHeight: v.lashingBridgeHeight || '',
       basicInformation: v.basicInformation || '',
       mainPhotoCol: '',
+      mainPhotoUrls: mainPhotoUrlLinks,
       photoCount: v.mainPhotographs?.length || 0,
       createdDate: v.createdAt ? new Date(v.createdAt).toLocaleDateString() : '',
     });
@@ -155,7 +162,7 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
       const photoObj = await getPhotoBufferAndExt(firstPhoto.url);
 
       if (photoObj) {
-        row.height = 70; // Expand row height for image thumbnail
+        row.height = 80;
         const imageId = workbook.addImage({
           base64: photoObj.buffer.toString('base64'),
           extension: photoObj.extension,
@@ -163,7 +170,7 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
 
         sheet1.addImage(imageId, {
           tl: { col: 15.1, row: rowIndex - 1 + 0.1 },
-          ext: { width: 110, height: 60 },
+          ext: { width: 120, height: 70 },
           editAs: 'oneCell',
         });
       }
@@ -171,7 +178,8 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
   }
 
   styleSheetHeader(sheet1);
-  sheet1.getColumn('mainPhotoCol').width = 22;
+  sheet1.getColumn('mainPhotoCol').width = 24;
+  sheet1.getColumn('mainPhotoUrls').width = 40;
 
   // Helper map for vessel reference
   const vesselMap = new Map<string, { name: string; imo: string }>();
@@ -197,7 +205,9 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
       { header: 'IMO Number', key: 'imoNumber', width: 16 },
       { header: 'Entry Description (Text)', key: 'text', width: 45 },
       { header: 'Solution / Action Taken', key: 'solution', width: 40 },
-      { header: 'Entry Photograph', key: 'photoCol', width: 26 },
+      { header: 'Attached Photograph (Embedded)', key: 'photoCol', width: 26 },
+      { header: 'Attached Photo Links (Direct Cloud URLs)', key: 'photoUrls', width: 42 },
+      { header: 'Photo Count', key: 'photoCount', width: 14 },
       { header: 'User Stamp (Added By)', key: 'addedBy', width: 25 },
       { header: 'Updated Date & Time', key: 'date', width: 22 },
     ];
@@ -209,12 +219,18 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
       const rowIndex = j + 2;
       const vesselInfo = vesselMap.get(e.vesselId.toString()) || { name: 'Unknown', imo: 'N/A' };
 
+      const photoUrlLinks = e.photographs && e.photographs.length > 0
+        ? e.photographs.map((p, idx) => `Photo ${idx + 1}: ${p.url}`).join('\n')
+        : 'No Attached Photos';
+
       const row = sheet.addRow({
         vesselName: vesselInfo.name,
         imoNumber: vesselInfo.imo,
         text: e.text,
         solution: e.solution || 'N/A',
         photoCol: '',
+        photoUrls: photoUrlLinks,
+        photoCount: e.photographs?.length || 0,
         addedBy: `${e.createdByName || 'Unknown'} (${e.createdBy || ''})`,
         date: e.createdAt ? new Date(e.createdAt).toLocaleString() : '',
       });
@@ -227,15 +243,15 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
         const photoObj = await getPhotoBufferAndExt(firstPhoto.url);
 
         if (photoObj) {
-          row.height = 75; // Expand row height for image thumbnail
+          row.height = 80;
           const imageId = workbook.addImage({
             base64: photoObj.buffer.toString('base64'),
             extension: photoObj.extension,
           });
 
           sheet.addImage(imageId, {
-            tl: { col: 3.1, row: rowIndex - 1 + 0.1 },
-            ext: { width: 110, height: 65 },
+            tl: { col: 4.1, row: rowIndex - 1 + 0.1 },
+            ext: { width: 120, height: 70 },
             editAs: 'oneCell',
           });
         }
@@ -243,7 +259,8 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
     }
 
     styleSheetHeader(sheet);
-    sheet.getColumn('photoCol').width = 22;
+    sheet.getColumn('photoCol').width = 26;
+    sheet.getColumn('photoUrls').width = 44;
     sheet.getColumn('text').width = 45;
   }
 
