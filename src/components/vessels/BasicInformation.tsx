@@ -171,7 +171,6 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
             />
           </div>
         )}
-        </div>
       </div>
 
       {/* Primary Technical Spec Grid */}
