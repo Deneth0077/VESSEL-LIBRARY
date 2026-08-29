@@ -8,7 +8,9 @@ import VesselEntry from '@/models/VesselEntry';
 /**
  * Helper to resolve image buffer and extension from photo URL
  */
-async function getPhotoBufferAndExt(url: string): Promise<{ buffer: Buffer; extension: 'jpeg' | 'png' | 'gif' } | null> {
+async function getPhotoBufferAndExt(
+  url: string
+): Promise<{ buffer: Buffer; extension: 'jpeg' | 'png' | 'gif' } | null> {
   try {
     if (!url) return null;
 
@@ -36,12 +38,16 @@ async function getPhotoBufferAndExt(url: string): Promise<{ buffer: Buffer; exte
 
     // Remote HTTP / Cloudinary URL
     if (url.startsWith('http://') || url.startsWith('https://')) {
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
+      });
       if (res.ok) {
         const arrayBuf = await res.arrayBuffer();
         const buffer = Buffer.from(arrayBuf);
-        const ext = url.split('.').pop()?.split('?')[0]?.toLowerCase();
-        const extension = ext === 'png' ? 'png' : ext === 'gif' ? 'gif' : 'jpeg';
+        const urlLower = url.toLowerCase();
+        const extension = urlLower.includes('.png') ? 'png' : urlLower.includes('.gif') ? 'gif' : 'jpeg';
         return { buffer, extension };
       }
     }
@@ -64,62 +70,66 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
   workbook.lastModifiedBy = 'VESSEL LIBRARY System';
   workbook.created = new Date();
 
-  const headerFill: ExcelJS.Fill = {
+  // Primary Header Style (Navy Blue)
+  const headerFillNavy: ExcelJS.Fill = {
     type: 'pattern',
     pattern: 'solid',
-    fgColor: { argb: 'FF002B49' }, // Deep Navy Blue header
+    fgColor: { argb: 'FF002B49' },
+  };
+
+  // Special Notes Header Style (Red Accent)
+  const headerFillRed: ExcelJS.Fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFC53030' },
   };
 
   const headerFont: Partial<ExcelJS.Font> = {
-    name: 'Arial',
+    name: 'Segoe UI',
     size: 11,
     bold: true,
     color: { argb: 'FFFFFFFF' },
   };
 
-  const styleSheetHeader = (worksheet: ExcelJS.Worksheet) => {
+  const thinBorder: Partial<ExcelJS.Borders> = {
+    top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+    left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+    bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+    right: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+  };
+
+  const styleSheetHeader = (worksheet: ExcelJS.Worksheet, isRedHeader = false) => {
     const headerRow = worksheet.getRow(1);
-    headerRow.height = 30;
+    headerRow.height = 32;
     headerRow.eachCell((cell) => {
-      cell.fill = headerFill;
+      cell.fill = isRedHeader ? headerFillRed : headerFillNavy;
       cell.font = headerFont;
       cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-    });
-
-    worksheet.columns.forEach((column) => {
-      let maxLength = 14;
-      column.eachCell?.({ includeEmpty: true }, (cell) => {
-        const val = cell.value ? cell.value.toString() : '';
-        if (val.length > maxLength) {
-          maxLength = val.length;
-        }
-      });
-      column.width = Math.min(maxLength + 4, 50);
     });
   };
 
   // ==========================================
-  // SHEET 1: Vessel Directory & Main Photos
+  // SHEET 1: Vessel Master Directory
   // ==========================================
-  const sheet1 = workbook.addWorksheet('Vessel List');
+  const sheet1 = workbook.addWorksheet('Vessel Directory');
   sheet1.columns = [
-    { header: 'Vessel Name', key: 'vesselName', width: 22 },
+    { header: 'Vessel Name', key: 'vesselName', width: 24 },
     { header: 'IMO Number', key: 'imoNumber', width: 16 },
     { header: 'Vessel Type', key: 'vesselType', width: 18 },
     { header: 'Flag State', key: 'flag', width: 16 },
     { header: 'Owner / Operator', key: 'ownerOperator', width: 25 },
     { header: 'Call Sign', key: 'callSign', width: 14 },
     { header: 'Year Built', key: 'yearBuilt', width: 12 },
-    { header: 'LOA (Length Over All)', key: 'loa', width: 20 },
+    { header: 'LOA (Length Over All)', key: 'loa', width: 22 },
     { header: 'Beam', key: 'beam', width: 14 },
-    { header: 'Keel to Deck', key: 'keelToDeck', width: 16 },
+    { header: 'Keel to Deck', key: 'keelToDeck', width: 18 },
     { header: 'Bays', key: 'numberOfBays', width: 12 },
     { header: 'Rows', key: 'numberOfRows', width: 12 },
     { header: 'Lashing Bridges', key: 'lashingBridges', width: 16 },
     { header: 'Bridge Height', key: 'lashingBridgeHeight', width: 16 },
-    { header: 'Additional Specs & Notes', key: 'basicInformation', width: 35 },
-    { header: 'Main Photograph (Embedded)', key: 'mainPhotoCol', width: 26 },
-    { header: 'Photo Direct Links (URLs)', key: 'mainPhotoUrls', width: 38 },
+    { header: 'Additional Specs & Notes', key: 'basicInformation', width: 45 },
+    { header: 'Main Photograph (Thumbnail)', key: 'mainPhotoCol', width: 28 },
+    { header: 'Photo Direct Links (Cloud URLs)', key: 'mainPhotoUrls', width: 45 },
     { header: 'Photo Count', key: 'photoCount', width: 14 },
     { header: 'Created Date', key: 'createdDate', width: 18 },
   ];
@@ -140,21 +150,23 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
       ownerOperator: v.ownerOperator,
       callSign: v.callSign,
       yearBuilt: v.yearBuilt,
-      loa: v.loa || '',
-      beam: v.beam || '',
-      keelToDeck: v.keelToDeck || '',
-      numberOfBays: v.numberOfBays || '',
-      numberOfRows: v.numberOfRows || '',
-      lashingBridges: v.lashingBridges || '',
-      lashingBridgeHeight: v.lashingBridgeHeight || '',
-      basicInformation: v.basicInformation || '',
+      loa: v.loa || 'N/A',
+      beam: v.beam || 'N/A',
+      keelToDeck: v.keelToDeck || 'N/A',
+      numberOfBays: v.numberOfBays || 'N/A',
+      numberOfRows: v.numberOfRows || 'N/A',
+      lashingBridges: v.lashingBridges || 'N/A',
+      lashingBridgeHeight: v.lashingBridgeHeight || 'N/A',
+      basicInformation: v.basicInformation || 'N/A',
       mainPhotoCol: '',
       mainPhotoUrls: mainPhotoUrlLinks,
       photoCount: v.mainPhotographs?.length || 0,
       createdDate: v.createdAt ? new Date(v.createdAt).toLocaleDateString() : '',
     });
 
+    row.height = 85;
     row.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+    row.eachCell((cell) => { cell.border = thinBorder; });
 
     // Embed main photograph into Excel cell
     if (v.mainPhotographs && v.mainPhotographs.length > 0) {
@@ -162,15 +174,14 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
       const photoObj = await getPhotoBufferAndExt(firstPhoto.url);
 
       if (photoObj) {
-        row.height = 80;
         const imageId = workbook.addImage({
           base64: photoObj.buffer.toString('base64'),
           extension: photoObj.extension,
         });
 
         sheet1.addImage(imageId, {
-          tl: { col: 15.1, row: rowIndex - 1 + 0.1 },
-          ext: { width: 120, height: 70 },
+          tl: { col: 15.05, row: rowIndex - 1 + 0.05 },
+          ext: { width: 135, height: 75 },
           editAs: 'oneCell',
         });
       }
@@ -178,8 +189,6 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
   }
 
   styleSheetHeader(sheet1);
-  sheet1.getColumn('mainPhotoCol').width = 24;
-  sheet1.getColumn('mainPhotoUrls').width = 40;
 
   // Helper map for vessel reference
   const vesselMap = new Map<string, { name: string; imo: string }>();
@@ -188,11 +197,11 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
   });
 
   const sectionConfigs = [
-    { key: 'STRUCTURE', name: 'Vessel Structure' },
-    { key: 'STRUCTURAL_DAMAGE', name: 'Structural Damages' },
-    { key: 'OPERATIONAL_CHALLENGE', name: 'Operational Challenges' },
-    { key: 'SPECIAL_NOTE', name: 'Special Notes' },
-    { key: 'REMARK', name: 'Remarks' },
+    { key: 'STRUCTURE', name: '2. Vessel Structure', isRed: false },
+    { key: 'STRUCTURAL_DAMAGE', name: '3. Structural Damages', isRed: false },
+    { key: 'OPERATIONAL_CHALLENGE', name: '4. Operational Challenges', isRed: false },
+    { key: 'SPECIAL_NOTE', name: '5. Special Notes', isRed: true },
+    { key: 'REMARK', name: '6. Remarks', isRed: false },
   ];
 
   // ==========================================
@@ -203,10 +212,10 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
     sheet.columns = [
       { header: 'Vessel Name', key: 'vesselName', width: 22 },
       { header: 'IMO Number', key: 'imoNumber', width: 16 },
-      { header: 'Entry Description (Text)', key: 'text', width: 45 },
-      { header: 'Solution / Action Taken', key: 'solution', width: 40 },
-      { header: 'Attached Photograph (Embedded)', key: 'photoCol', width: 26 },
-      { header: 'Attached Photo Links (Direct Cloud URLs)', key: 'photoUrls', width: 42 },
+      { header: 'Entry Description (Text)', key: 'text', width: 50 },
+      { header: 'Solution / Action Taken', key: 'solution', width: 45 },
+      { header: 'Attached Photograph (Thumbnail)', key: 'photoCol', width: 28 },
+      { header: 'Attached Photo Links (Direct Cloud URLs)', key: 'photoUrls', width: 45 },
       { header: 'Photo Count', key: 'photoCount', width: 14 },
       { header: 'User Stamp (Added By)', key: 'addedBy', width: 25 },
       { header: 'Updated Date & Time', key: 'date', width: 22 },
@@ -235,33 +244,31 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
         date: e.createdAt ? new Date(e.createdAt).toLocaleString() : '',
       });
 
+      row.height = 85;
       row.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+      row.eachCell((cell) => { cell.border = thinBorder; });
 
-      // Embed entry photograph into Excel cell
+      // Embed entry photograph thumbnail into Excel cell
       if (e.photographs && e.photographs.length > 0) {
         const firstPhoto = e.photographs[0];
         const photoObj = await getPhotoBufferAndExt(firstPhoto.url);
 
         if (photoObj) {
-          row.height = 80;
           const imageId = workbook.addImage({
             base64: photoObj.buffer.toString('base64'),
             extension: photoObj.extension,
           });
 
           sheet.addImage(imageId, {
-            tl: { col: 4.1, row: rowIndex - 1 + 0.1 },
-            ext: { width: 120, height: 70 },
+            tl: { col: 4.05, row: rowIndex - 1 + 0.05 },
+            ext: { width: 135, height: 75 },
             editAs: 'oneCell',
           });
         }
       }
     }
 
-    styleSheetHeader(sheet);
-    sheet.getColumn('photoCol').width = 26;
-    sheet.getColumn('photoUrls').width = 44;
-    sheet.getColumn('text').width = 45;
+    styleSheetHeader(sheet, config.isRed);
   }
 
   const buffer = await workbook.xlsx.writeBuffer();
