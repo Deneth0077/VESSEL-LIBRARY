@@ -31,7 +31,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const canEditText = !initialEntry || canEditOrDeleteEntry(currentUser, initialEntry.createdBy);
+  const canEditText = !initialEntry || canEditOrDeleteEntry(currentUser, initialEntry.createdBy, initialEntry.createdByName);
 
   // Prevent background body scrolling when modal is open
   useEffect(() => {

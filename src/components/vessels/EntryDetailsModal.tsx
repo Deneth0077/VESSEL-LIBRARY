@@ -33,7 +33,7 @@ export const EntryDetailsModal: React.FC<EntryDetailsModalProps> = ({
 }) => {
   if (!isOpen || !entry) return null;
 
-  const canModify = canEditOrDeleteEntry(currentUser, entry.createdBy);
+  const canModify = canEditOrDeleteEntry(currentUser, entry.createdBy, entry.createdByName);
   const canManagePhotos = !!currentUser && currentUser.status === 'APPROVED';
 
   const createdDate = entry.createdAt

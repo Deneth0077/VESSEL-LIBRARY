@@ -19,7 +19,7 @@ export const EntryCard: React.FC<EntryCardProps> = ({ entry, currentUser, onEdit
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-  const canModify = canEditOrDeleteEntry(currentUser, entry.createdBy);
+  const canModify = canEditOrDeleteEntry(currentUser, entry.createdBy, entry.createdByName);
   const canManagePhotos = !!currentUser && currentUser.status === 'APPROVED';
 
   const createdDate = entry.createdAt
