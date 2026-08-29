@@ -25,6 +25,7 @@ export const VesselFullDetailsModal: React.FC<VesselFullDetailsModalProps> = ({
     SPECIAL_NOTE: [],
     REMARK: [],
   });
+  const [loading, setLoading] = useState(false);
   // Prevent background body scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
