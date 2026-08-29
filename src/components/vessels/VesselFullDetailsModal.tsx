@@ -25,7 +25,17 @@ export const VesselFullDetailsModal: React.FC<VesselFullDetailsModalProps> = ({
     SPECIAL_NOTE: [],
     REMARK: [],
   });
-  const [loading, setLoading] = useState(false);
+  // Prevent background body scrolling when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const sectionConfigs: { key: SectionType; code: string; title: string }[] = [
     { key: 'STRUCTURE', code: 'SECTION 2.0', title: 'VESSEL STRUCTURE' },
