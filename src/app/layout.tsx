@@ -46,7 +46,7 @@ export default function RootLayout({
         <footer className="bg-navy-900 text-white border-t border-navy-800 py-6 mt-12 text-center text-xs text-slate-400">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <span className="font-semibold text-white">VESSEL LIBRARY © {new Date().getFullYear()}</span>
-            <span>Maritime Technical Documentation System • Confidential Client Access</span>
+            <span>Maritime Technical Documentation System • IT Support</span>
           </div>
         </footer>
 
