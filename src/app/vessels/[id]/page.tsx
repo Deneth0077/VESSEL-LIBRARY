@@ -185,49 +185,7 @@ export default function VesselProfilePage() {
         <BasicInformation vessel={vessel} onUpdateVessel={fetchVesselAndUser} />
       </div>
 
-      {/* DROPDOWN MENU TO OPEN TECHNICAL SECTIONS (Requirement 2-6) */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-ocean-200 shadow-sm space-y-4 bg-gradient-to-r from-slate-50 to-ocean-50/30 print:hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2.5 text-navy-900 font-bold text-sm uppercase tracking-wide">
-              <Layers className="w-5 h-5 text-ocean-600 shrink-0" />
-              <span>Vessel Technical Profile Section Selector</span>
-            </div>
-            <p className="text-xs text-slate-500 font-medium">
-              Select a section from the dropdown or click &quot;View All Details&quot; to expand all 6 technical sections at once.
-            </p>
-          </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => setOpenSection(openSection === 'ALL' ? null : 'ALL')}
-              className={`inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all min-h-[44px] cursor-pointer shadow-xs active:scale-95 ${
-                openSection === 'ALL'
-                  ? 'bg-ocean-600 text-white hover:bg-ocean-700'
-                  : 'bg-navy-900 text-white hover:bg-navy-800'
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              <span>{openSection === 'ALL' ? 'Collapse All Sections' : 'View All Details (Expand All)'}</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="w-full sm:max-w-md">
-          <select
-            value={openSection || ''}
-            onChange={handleDropdownSelect}
-            className="w-full bg-white border border-slate-300 text-slate-800 text-sm font-bold rounded-xl px-4 py-3 focus:ring-2 focus:ring-navy-600 focus:border-navy-600 outline-none shadow-xs cursor-pointer min-h-[48px] appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%20%22%20fill%3D%22none%22%20stroke%3D%22%23475569%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_12px_center] bg-no-repeat pr-10"
-          >
-            <option value="ALL">🌟 VIEW ALL DETAILS (Full Master Dossier)</option>
-            <option value="STRUCTURE">2. Vessel Structure</option>
-            <option value="STRUCTURAL_DAMAGE">3. Vessel Structural Damages</option>
-            <option value="OPERATIONAL_CHALLENGE">4. Operational Challenges</option>
-            <option value="SPECIAL_NOTE">5. Special Notes</option>
-            <option value="REMARK">6. Remarks</option>
-          </select>
-        </div>
-      </div>
 
       {/* SECTIONS 2-6 ACCORDIONS */}
       <div className="space-y-4 pt-2">
