@@ -34,6 +34,7 @@ export const EntryDetailsModal: React.FC<EntryDetailsModalProps> = ({
   if (!isOpen || !entry) return null;
 
   const canModify = canEditOrDeleteEntry(currentUser, entry.createdBy);
+  const canManagePhotos = !!currentUser && currentUser.status === 'APPROVED';
 
   const createdDate = entry.createdAt
     ? new Date(entry.createdAt).toLocaleString('en-GB', {
@@ -82,24 +83,24 @@ export const EntryDetailsModal: React.FC<EntryDetailsModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {canModify && onEdit && (
+            {canManagePhotos && onEdit && (
               <button
                 onClick={() => {
                   onClose();
                   onEdit(entry);
                 }}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all min-h-[38px] cursor-pointer"
-                title="Edit entry details"
+                title={canModify ? "Edit entry text & photographs" : "Add or manage entry photographs"}
               >
                 <Edit2 className="w-4 h-4 text-ocean-300" />
-                <span>Edit</span>
+                <span>{canModify ? 'Edit Entry' : 'Manage Photos'}</span>
               </button>
             )}
 
             {canModify && onDelete && (
               <button
                 onClick={() => {
-                  if (confirm('Are you sure you want to delete this entry?')) {
+                  if (confirm('Are you sure you want to delete this entire entry?')) {
                     onClose();
                     onDelete(entry._id);
                   }
@@ -152,7 +153,7 @@ export const EntryDetailsModal: React.FC<EntryDetailsModalProps> = ({
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block font-mono">
               ATTACHED PHOTOGRAPHS ({entry.photographs?.length || 0})
             </span>
-            <PhotoGallery photos={entry.photographs || []} canDelete={canModify} />
+            <PhotoGallery photos={entry.photographs || []} canDelete={canManagePhotos} />
           </div>
 
           {/* User Metadata & Time Stamp */}

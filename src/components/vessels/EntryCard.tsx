@@ -20,6 +20,7 @@ export const EntryCard: React.FC<EntryCardProps> = ({ entry, currentUser, onEdit
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const canModify = canEditOrDeleteEntry(currentUser, entry.createdBy);
+  const canManagePhotos = !!currentUser && currentUser.status === 'APPROVED';
 
   const createdDate = entry.createdAt
     ? new Date(entry.createdAt).toLocaleString('en-GB', {
@@ -103,29 +104,30 @@ export const EntryCard: React.FC<EntryCardProps> = ({ entry, currentUser, onEdit
               <Eye className="w-4 h-4 text-ocean-600" />
             </button>
 
+            {canManagePhotos && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(entry);
+                }}
+                title={canModify ? "Edit entry text & photographs" : "Add or manage entry photographs"}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-ocean-600 hover:bg-ocean-50 transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+            )}
+
             {canModify && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(entry);
-                  }}
-                  title="Edit entry"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-ocean-600 hover:bg-ocean-50 transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowConfirmDelete(true);
-                  }}
-                  title="Delete entry"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowConfirmDelete(true);
+                }}
+                title="Delete entire entry"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             )}
           </div>
         </div>
@@ -148,7 +150,7 @@ export const EntryCard: React.FC<EntryCardProps> = ({ entry, currentUser, onEdit
           <div className="pt-2" onClick={(e) => e.stopPropagation()}>
             <PhotoGallery
               photos={entry.photographs}
-              canDelete={canModify}
+              canDelete={canManagePhotos}
               onDeletePhoto={handleDeleteEntryPhoto}
             />
           </div>

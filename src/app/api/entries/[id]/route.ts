@@ -19,10 +19,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ message: 'Entry not found.' }, { status: 404 });
     }
 
-    if (!canEditOrDeleteEntry(user, entry.createdBy)) {
-      return NextResponse.json({ message: 'Forbidden. You can only edit your own entries.' }, { status: 403 });
-    }
-
     const body = await req.json();
     const parseResult = vesselEntrySchema.partial().safeParse(body);
 
@@ -33,10 +29,23 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       );
     }
 
-    if (parseResult.data.text !== undefined) {
+    const isTextEdit = parseResult.data.text !== undefined || parseResult.data.solution !== undefined;
+    const isPhotoEdit = parseResult.data.photographs !== undefined;
+
+    // Only creator or admin can edit text or solution
+    if (isTextEdit && !canEditOrDeleteEntry(user, entry.createdBy)) {
+      return NextResponse.json({ message: 'Forbidden. Only the creator or admin can edit description text.' }, { status: 403 });
+    }
+
+    // Any approved user can update photographs
+    if (isPhotoEdit && user.status !== 'APPROVED') {
+      return NextResponse.json({ message: 'Forbidden. Approved account required to manage photos.' }, { status: 403 });
+    }
+
+    if (parseResult.data.text !== undefined && canEditOrDeleteEntry(user, entry.createdBy)) {
       entry.text = parseResult.data.text.trim();
     }
-    if (parseResult.data.solution !== undefined) {
+    if (parseResult.data.solution !== undefined && canEditOrDeleteEntry(user, entry.createdBy)) {
       entry.solution = parseResult.data.solution.trim();
     }
     if (parseResult.data.photographs !== undefined) {

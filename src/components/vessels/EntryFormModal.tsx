@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { SectionType, IPhotograph, IVesselEntry } from '@/types';
-import { Camera, Upload, X, Loader2, Image as ImageIcon, Plus, Wrench } from 'lucide-react';
+import { SectionType, IPhotograph, IVesselEntry, IUser } from '@/types';
+import { canEditOrDeleteEntry } from '@/lib/auth/rbac';
+import { Camera, Upload, X, Loader2, Image as ImageIcon, Plus, Wrench, Lock } from 'lucide-react';
 
 interface EntryFormModalProps {
   isOpen: boolean;
   section: SectionType;
   sectionTitle: string;
   initialEntry?: IVesselEntry | null;
+  currentUser?: IUser | null;
   onClose: () => void;
   onSave: (data: { text: string; solution?: string; photographs: IPhotograph[] }) => Promise<void>;
 }
@@ -18,6 +20,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
   section,
   sectionTitle,
   initialEntry,
+  currentUser,
   onClose,
   onSave,
 }) => {
@@ -27,6 +30,8 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const canEditText = !initialEntry || canEditOrDeleteEntry(currentUser, initialEntry.createdBy);
 
   useEffect(() => {
     if (initialEntry) {
@@ -117,7 +122,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
 
         <div className="px-5 py-4 bg-navy-900 text-white flex items-center justify-between shrink-0">
           <h3 className="font-bold text-base tracking-wide flex items-center gap-2">
-            <span>{initialEntry ? 'Edit Entry' : 'Add New Entry'}</span>
+            <span>{initialEntry ? (canEditText ? 'Edit Entry & Photos' : 'Manage Entry Photos') : 'Add New Entry'}</span>
             <span className="text-xs bg-navy-700 text-ocean-200 px-2 py-0.5 rounded uppercase font-semibold">
               {sectionTitle}
             </span>
@@ -138,17 +143,32 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
           )}
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Description Text <span className="text-rose-500">*</span>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+              <span>Description Text <span className="text-rose-500">*</span></span>
+              {!canEditText && (
+                <span className="text-[11px] text-amber-700 font-bold flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Text Locked (Creator Only)
+                </span>
+              )}
             </label>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               rows={4}
+              disabled={!canEditText}
               placeholder="Enter detailed observation notes, maintenance actions taken, or inspection findings..."
               required
-              className="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600 focus:border-navy-600 font-sans"
+              className={`w-full p-3.5 border rounded-xl text-slate-900 text-sm focus:outline-none font-sans ${
+                !canEditText
+                  ? 'bg-slate-100 border-slate-300 text-slate-600 cursor-not-allowed opacity-90'
+                  : 'bg-slate-50 border-slate-300 focus:ring-2 focus:ring-navy-600 focus:border-navy-600'
+              }`}
             />
+            {!canEditText && (
+              <p className="text-[11px] text-slate-500 mt-1 italic">
+                Filed by <strong>{initialEntry?.createdByName || 'another user'}</strong>. Only the creator can edit description text, but you can add/manage photographs below.
+              </p>
+            )}
           </div>
 
           {section === 'OPERATIONAL_CHALLENGE' && (
@@ -161,8 +181,13 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                 value={solution}
                 onChange={(e) => setSolution(e.target.value)}
                 rows={3}
+                disabled={!canEditText}
                 placeholder="Enter resolution, corrective action taken, or recommended solution..."
-                className="w-full p-3.5 bg-teal-50/40 border border-teal-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 font-sans"
+                className={`w-full p-3.5 border rounded-xl text-slate-900 text-sm focus:outline-none font-sans ${
+                  !canEditText
+                    ? 'bg-slate-100 border-slate-300 text-slate-600 cursor-not-allowed opacity-90'
+                    : 'bg-teal-50/40 border-teal-200 focus:ring-2 focus:ring-teal-600 focus:border-teal-600'
+                }`}
               />
             </div>
           )}
@@ -170,7 +195,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Attach Photographs (Optional)
+                Attach / Manage Photographs (Open for all users)
               </label>
               <span className="text-xs text-slate-400 font-medium">{photos.length} photo(s) selected</span>
             </div>
