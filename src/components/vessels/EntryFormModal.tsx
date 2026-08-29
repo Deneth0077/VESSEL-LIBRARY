@@ -53,20 +53,25 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
     if (!rawFiles || rawFiles.length === 0) return;
 
     let filesArray = Array.from(rawFiles);
-    if (filesArray.length > 5) {
-      setError('You can upload a maximum of 5 photographs at once. Processing the first 5 photos.');
-      filesArray = filesArray.slice(0, 5);
+    if (photos.length + filesArray.length > 5) {
+      const allowedCount = Math.max(0, 5 - photos.length);
+      if (allowedCount === 0) {
+        setError('Maximum limit of 5 photographs reached for this entry.');
+        if (e.target) e.target.value = '';
+        return;
+      }
+      setError(`Maximum limit is 5 photographs per entry. Processing the first ${allowedCount} photos.`);
+      filesArray = filesArray.slice(0, allowedCount);
     }
 
     try {
       setUploading(true);
       setError('');
-      const uploadedList: IPhotograph[] = [...photos];
 
-      for (let i = 0; i < filesArray.length; i++) {
+      const uploadPromises = filesArray.map(async (file, i) => {
         const formData = new FormData();
-        formData.append('file', filesArray[i]);
-        formData.append('caption', `${sectionTitle} Photo ${uploadedList.length + 1}`);
+        formData.append('file', file);
+        formData.append('caption', `${sectionTitle} Photo ${photos.length + i + 1}`);
 
         const res = await fetch('/api/photos', {
           method: 'POST',
@@ -74,17 +79,17 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
         });
 
         const data = await res.json().catch(() => ({}));
-
         if (res.ok && data.photo) {
-          uploadedList.push(data.photo);
+          return data.photo as IPhotograph;
         } else {
-          setError(data.message || 'Failed to upload photograph.');
+          throw new Error(data.message || 'Failed to upload photograph');
         }
-      }
+      });
 
-      setPhotos(uploadedList);
+      const uploadedPhotos = await Promise.all(uploadPromises);
+      setPhotos((prev) => [...prev, ...uploadedPhotos]);
     } catch (err: any) {
-      setError(err.message || 'Network error while uploading photo');
+      setError(err.message || 'Error uploading photos. Please try again.');
     } finally {
       setUploading(false);
       if (e.target) e.target.value = '';
@@ -97,7 +102,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim()) {
+    if (canEditText && !text.trim()) {
       setError('Description text is required.');
       return;
     }
@@ -105,7 +110,12 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
     try {
       setSaving(true);
       setError('');
-      await onSave({ text: text.trim(), solution: solution.trim(), photographs: photos });
+
+      if (canEditText) {
+        await onSave({ text: text.trim(), solution: solution.trim(), photographs: photos });
+      } else {
+        await onSave({ text: initialEntry?.text || text.trim(), photographs: photos });
+      }
       onClose();
     } catch (err: any) {
       setError(err.message || 'Error saving entry');
@@ -157,7 +167,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
               rows={4}
               disabled={!canEditText}
               placeholder="Enter detailed observation notes, maintenance actions taken, or inspection findings..."
-              required
+              required={canEditText}
               className={`w-full p-3.5 border rounded-xl text-slate-900 text-sm focus:outline-none font-sans ${
                 !canEditText
                   ? 'bg-slate-100 border-slate-300 text-slate-600 cursor-not-allowed opacity-90'

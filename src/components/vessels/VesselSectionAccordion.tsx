@@ -68,7 +68,7 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
     }
   }, [isOpen, vesselId, section]);
 
-  const handleSaveEntry = async (data: { text: string; photographs: any[] }) => {
+  const handleSaveEntry = async (data: { text: string; solution?: string; photographs: any[] }) => {
     if (editingEntry) {
       const res = await fetch(`/api/entries/${editingEntry._id}`, {
         method: 'PATCH',
@@ -83,6 +83,7 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
         body: JSON.stringify({
           section,
           text: data.text,
+          solution: data.solution || '',
           photographs: data.photographs,
         }),
       });
