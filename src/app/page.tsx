@@ -92,6 +92,7 @@ export default function HomePage() {
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
+            vessels={vessels}
             placeholder="Search vessel name, IMO number, call sign..."
           />
         </div>
