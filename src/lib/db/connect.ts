@@ -27,7 +27,7 @@ export async function dbConnect(): Promise<typeof mongoose> {
   if (!cached?.promise) {
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 5000, // 5s fast timeout
     };
 
     const primaryUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/vessels_db';
@@ -35,7 +35,7 @@ export async function dbConnect(): Promise<typeof mongoose> {
     cached!.promise = mongoose
       .connect(primaryUri, opts)
       .catch(async (err) => {
-        console.warn('Could not connect to external MongoDB server. Starting in-memory instance...');
+        console.warn('Could not connect to MongoDB Atlas cluster (IP whitelist or network issue). Falling back to In-Memory MongoDB:', err.message);
         try {
           // Use eval require to prevent Webpack bundling mongodb-memory-server core
           const { MongoMemoryServer } = eval("require('mongodb-memory-server')");
@@ -47,7 +47,7 @@ export async function dbConnect(): Promise<typeof mongoose> {
           return mongoose.connect(memoryUri, { bufferCommands: false });
         } catch (memErr) {
           console.error('In-memory MongoDB fallback error:', memErr);
-          throw err;
+          throw new Error('Database connection failed. Please whitelist your IP address in MongoDB Atlas (0.0.0.0/0).');
         }
       })
       .then(async (m) => {
