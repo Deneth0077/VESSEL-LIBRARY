@@ -21,7 +21,7 @@ export default function VesselProfilePage() {
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFullDetailsModal, setShowFullDetailsModal] = useState(false);
-  const [openSection, setOpenSection] = useState<string | null>('ALL');
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
   const fetchVesselAndUser = async () => {
     try {
@@ -193,12 +193,12 @@ export default function VesselProfilePage() {
           <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
             Vessel Technical Sections & Documentation
           </h2>
-          {openSection === 'ALL' && (
-            <span className="text-xs font-bold text-teal-600 flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              Full Master View Active (All Sections Visible)
-            </span>
-          )}
+          <button
+            onClick={() => setOpenSection(openSection === 'ALL' ? null : 'ALL')}
+            className="text-xs font-bold text-navy-700 hover:text-navy-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg border border-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer min-h-[36px]"
+          >
+            {openSection === 'ALL' ? '🔒 Collapse All Sections' : '🔓 Expand All Sections'}
+          </button>
         </div>
 
         {/* 2. Vessel Structure */}
