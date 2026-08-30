@@ -273,7 +273,7 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
           </div>
         )}
 
-        {/* Graphical Reefer Motor Configuration Section */}
+        {/* Graphical Reefer Motor Configuration Section (Temporarily Commented Out)
         <div className="p-3.5 border-t border-slate-200">
           <ReeferMotorConfigurator
             vessel={vessel}
@@ -281,6 +281,7 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
             onUpdateVessel={onUpdateVessel}
           />
         </div>
+        */}
       </div>
 
       {/* Streamlined Additional Specifications & Notes */}
