@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full bg-surface">
+    <html lang="en" className="h-full bg-surface" suppressHydrationWarning>
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -40,7 +40,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Vessel Library" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className="min-h-full flex flex-col font-sans antialiased text-navy-900 bg-surface">
+      <body className="min-h-full flex flex-col font-sans antialiased text-navy-900 bg-surface" suppressHydrationWarning>
         <Header />
         <main className="flex-1 w-full">{children}</main>
         <footer className="bg-navy-900 text-white border-t border-navy-800 py-6 mt-12 text-center text-xs text-slate-400">
