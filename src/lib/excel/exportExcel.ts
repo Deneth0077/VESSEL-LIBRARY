@@ -129,18 +129,12 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
     { header: 'Bridge Height', key: 'lashingBridgeHeight', width: 16 },
     { header: 'Additional Specs & Notes', key: 'basicInformation', width: 45 },
     { header: 'Main Photograph (Thumbnail)', key: 'mainPhotoCol', width: 28 },
-    { header: 'Photo Direct Links (Cloud URLs)', key: 'mainPhotoUrls', width: 45 },
-    { header: 'Photo Count', key: 'photoCount', width: 14 },
     { header: 'Created Date', key: 'createdDate', width: 18 },
   ];
 
   for (let i = 0; i < vessels.length; i++) {
     const v = vessels[i];
     const rowIndex = i + 2;
-
-    const mainPhotoUrlLinks = v.mainPhotographs && v.mainPhotographs.length > 0
-      ? v.mainPhotographs.map((p, idx) => `Main Photo ${idx + 1}: ${p.url}`).join('\n')
-      : 'No Main Photos';
 
     const row = sheet1.addRow({
       vesselName: v.vesselName,
@@ -159,8 +153,6 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
       lashingBridgeHeight: v.lashingBridgeHeight || 'N/A',
       basicInformation: v.basicInformation || 'N/A',
       mainPhotoCol: '',
-      mainPhotoUrls: mainPhotoUrlLinks,
-      photoCount: v.mainPhotographs?.length || 0,
       createdDate: v.createdAt ? new Date(v.createdAt).toLocaleDateString() : '',
     });
 
@@ -206,18 +198,18 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
   ];
 
   // ==========================================
-  // SHEETS 2-6: Technical Sections & Entry Photos
+  // SHEETS 2-7: Technical Sections & Entry Photos
   // ==========================================
   for (const config of sectionConfigs) {
     const sheet = workbook.addWorksheet(config.name);
     sheet.columns = [
       { header: 'Vessel Name', key: 'vesselName', width: 22 },
       { header: 'IMO Number', key: 'imoNumber', width: 16 },
-      { header: 'Entry Description (Text)', key: 'text', width: 50 },
+      { header: 'Category / Component', key: 'category', width: 24 },
+      { header: 'Safety Status', key: 'safetyStatus', width: 16 },
+      { header: 'Entry Description / Comments', key: 'text', width: 50 },
       { header: 'Solution / Action Taken', key: 'solution', width: 45 },
       { header: 'Attached Photograph (Thumbnail)', key: 'photoCol', width: 28 },
-      { header: 'Attached Photo Links (Direct Cloud URLs)', key: 'photoUrls', width: 45 },
-      { header: 'Photo Count', key: 'photoCount', width: 14 },
       { header: 'User Stamp (Added By)', key: 'addedBy', width: 25 },
       { header: 'Updated Date & Time', key: 'date', width: 22 },
     ];
@@ -229,18 +221,14 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
       const rowIndex = j + 2;
       const vesselInfo = vesselMap.get(e.vesselId.toString()) || { name: 'Unknown', imo: 'N/A' };
 
-      const photoUrlLinks = e.photographs && e.photographs.length > 0
-        ? e.photographs.map((p, idx) => `Photo ${idx + 1}: ${p.url}`).join('\n')
-        : 'No Attached Photos';
-
       const row = sheet.addRow({
         vesselName: vesselInfo.name,
         imoNumber: vesselInfo.imo,
+        category: e.category || 'General',
+        safetyStatus: e.safetyStatus || 'N/A',
         text: e.text,
         solution: e.solution || 'N/A',
         photoCol: '',
-        photoUrls: photoUrlLinks,
-        photoCount: e.photographs?.length || 0,
         addedBy: `${e.createdByName || 'Unknown'} (${e.createdBy || ''})`,
         date: e.createdAt ? new Date(e.createdAt).toLocaleString() : '',
       });
@@ -261,7 +249,7 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
           });
 
           sheet.addImage(imageId, {
-            tl: { col: 4.05, row: rowIndex - 1 + 0.05 },
+            tl: { col: 6.05, row: rowIndex - 1 + 0.05 },
             ext: { width: 135, height: 75 },
             editAs: 'oneCell',
           });
