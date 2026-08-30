@@ -32,6 +32,7 @@ const VesselSchema: Schema = new Schema<IVesselDocument>(
     lashingBridges: { type: String, default: '' },
     lashingBridgeHeight: { type: String, default: '' },
     basicInformation: { type: String, default: '' },
+    reeferMotorConfig: { type: Schema.Types.Mixed, default: {} },
     mainPhotographs: [PhotographSchema],
     createdBy: { type: String, required: true },
     updatedBy: { type: String, required: true },

@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { IVessel, IPhotograph, IUser } from '@/types';
 import { PhotoGallery } from './PhotoGallery';
 import { EditVesselModal } from './EditVesselModal';
+import { ReeferMotorConfigurator } from './ReeferMotorConfigurator';
 import { canManageVessel } from '@/lib/auth/rbac';
 import { Camera, Loader2, Info, Edit, Ruler, Upload, AlertCircle } from 'lucide-react';
 
@@ -271,6 +272,15 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
             </div>
           </div>
         )}
+
+        {/* Graphical Reefer Motor Configuration Section */}
+        <div className="p-3.5 border-t border-slate-200">
+          <ReeferMotorConfigurator
+            vessel={vessel}
+            currentUser={currentUser}
+            onUpdateVessel={onUpdateVessel}
+          />
+        </div>
       </div>
 
       {/* Streamlined Additional Specifications & Notes */}

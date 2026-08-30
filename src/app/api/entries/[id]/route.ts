@@ -48,6 +48,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (parseResult.data.solution !== undefined && canEditOrDeleteEntry(user, entry.createdBy)) {
       entry.solution = parseResult.data.solution.trim();
     }
+    if (parseResult.data.safetyStatus !== undefined && canEditOrDeleteEntry(user, entry.createdBy)) {
+      entry.safetyStatus = parseResult.data.safetyStatus;
+    }
+    if (parseResult.data.category !== undefined && canEditOrDeleteEntry(user, entry.createdBy)) {
+      entry.category = parseResult.data.category.trim();
+    }
     if (parseResult.data.photographs !== undefined) {
       entry.photographs = parseResult.data.photographs as any;
     }

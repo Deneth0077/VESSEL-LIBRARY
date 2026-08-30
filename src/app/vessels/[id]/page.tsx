@@ -241,14 +241,24 @@ export default function VesselProfilePage() {
           onToggle={() => setOpenSection(openSection === 'SPECIAL_NOTE' ? null : 'SPECIAL_NOTE')}
         />
 
-        {/* 6. Remarks */}
+        {/* 6. On Board Safety */}
         <VesselSectionAccordion
           vesselId={vesselId}
           section="REMARK"
-          title="6. Remarks"
+          title="6. On Board Safety"
           currentUser={currentUser}
           isOpen={openSection === 'ALL' || openSection === 'REMARK'}
           onToggle={() => setOpenSection(openSection === 'REMARK' ? null : 'REMARK')}
+        />
+
+        {/* 7. Vessel Coordination */}
+        <VesselSectionAccordion
+          vesselId={vesselId}
+          section="VESSEL_COORDINATION"
+          title="7. Vessel Coordination"
+          currentUser={currentUser}
+          isOpen={openSection === 'ALL' || openSection === 'VESSEL_COORDINATION'}
+          onToggle={() => setOpenSection(openSection === 'VESSEL_COORDINATION' ? null : 'VESSEL_COORDINATION')}
         />
       </div>
 

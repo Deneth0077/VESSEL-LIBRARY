@@ -48,13 +48,16 @@ export const vesselSchema = z.object({
   lashingBridges: z.string().optional(),
   lashingBridgeHeight: z.string().optional(),
   basicInformation: z.string().optional(),
+  reeferMotorConfig: z.record(z.object({ deck: z.string().optional(), hold: z.string().optional() })).optional(),
   mainPhotographs: z.array(photographSchema).optional(),
 });
 
 export const vesselEntrySchema = z.object({
-  section: z.enum(['STRUCTURE', 'STRUCTURAL_DAMAGE', 'OPERATIONAL_CHALLENGE', 'SPECIAL_NOTE', 'REMARK']),
+  section: z.enum(['STRUCTURE', 'STRUCTURAL_DAMAGE', 'OPERATIONAL_CHALLENGE', 'SPECIAL_NOTE', 'REMARK', 'VESSEL_COORDINATION']),
   text: z.string().min(2, 'Description text is required'),
   solution: z.string().optional(),
+  safetyStatus: z.enum(['SAFE', 'UNSAFE', '']).optional(),
+  category: z.string().optional(),
   photographs: z.array(photographSchema).optional(),
 });
 

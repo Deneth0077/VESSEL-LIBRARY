@@ -61,6 +61,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       section: parseResult.data.section,
       text: parseResult.data.text.trim(),
       solution: parseResult.data.solution?.trim() || '',
+      safetyStatus: parseResult.data.safetyStatus || '',
+      category: parseResult.data.category?.trim() || '',
       photographs: parseResult.data.photographs || [],
       createdBy: user._id.toString(),
       createdByName: user.fullName,

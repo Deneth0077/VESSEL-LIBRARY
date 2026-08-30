@@ -3,16 +3,24 @@
 import React, { useState, useEffect } from 'react';
 import { SectionType, IPhotograph, IVesselEntry, IUser } from '@/types';
 import { canEditOrDeleteEntry } from '@/lib/auth/rbac';
-import { Camera, Upload, X, Loader2, Image as ImageIcon, Plus, Wrench, Lock } from 'lucide-react';
+import { Camera, Upload, X, Loader2, Image as ImageIcon, Plus, Wrench, Lock, ShieldCheck, ShieldAlert, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface EntryFormModalProps {
   isOpen: boolean;
   section: SectionType;
   sectionTitle: string;
   initialEntry?: IVesselEntry | null;
+  initialCategory?: string;
+  initialSafetyStatus?: 'SAFE' | 'UNSAFE' | '';
   currentUser?: IUser | null;
   onClose: () => void;
-  onSave: (data: { text: string; solution?: string; photographs: IPhotograph[] }) => Promise<void>;
+  onSave: (data: {
+    text: string;
+    solution?: string;
+    safetyStatus?: 'SAFE' | 'UNSAFE' | '';
+    category?: string;
+    photographs: IPhotograph[];
+  }) => Promise<void>;
 }
 
 export const EntryFormModal: React.FC<EntryFormModalProps> = ({
@@ -20,12 +28,16 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
   section,
   sectionTitle,
   initialEntry,
+  initialCategory,
+  initialSafetyStatus,
   currentUser,
   onClose,
   onSave,
 }) => {
   const [text, setText] = useState('');
   const [solution, setSolution] = useState('');
+  const [safetyStatus, setSafetyStatus] = useState<'SAFE' | 'UNSAFE' | ''>('');
+  const [category, setCategory] = useState<string>('');
   const [photos, setPhotos] = useState<IPhotograph[]>([]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -49,14 +61,18 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
     if (initialEntry) {
       setText(initialEntry.text || '');
       setSolution(initialEntry.solution || '');
+      setSafetyStatus(initialEntry.safetyStatus || '');
+      setCategory(initialEntry.category || (section === 'REMARK' ? 'Gangway Safety' : section === 'VESSEL_COORDINATION' ? 'Vessel Officials Behavior' : ''));
       setPhotos(initialEntry.photographs || []);
     } else {
       setText('');
       setSolution('');
+      setSafetyStatus(initialSafetyStatus || (section === 'REMARK' ? 'SAFE' : ''));
+      setCategory(initialCategory || (section === 'REMARK' ? 'Gangway Safety' : section === 'VESSEL_COORDINATION' ? 'Vessel Officials Behavior' : ''));
       setPhotos([]);
     }
     setError('');
-  }, [initialEntry, isOpen]);
+  }, [initialEntry, initialCategory, initialSafetyStatus, isOpen, section]);
 
   if (!isOpen) return null;
 
@@ -115,7 +131,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (canEditText && !text.trim()) {
-      setError('Description text is required.');
+      setError('Description comments are required.');
       return;
     }
 
@@ -124,7 +140,13 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
       setError('');
 
       if (canEditText) {
-        await onSave({ text: text.trim(), solution: solution.trim(), photographs: photos });
+        await onSave({
+          text: text.trim(),
+          solution: solution.trim(),
+          safetyStatus: section === 'REMARK' ? safetyStatus : undefined,
+          category: section === 'REMARK' ? (category.trim() || 'Gangway Safety') : undefined,
+          photographs: photos,
+        });
       } else {
         await onSave({ text: initialEntry?.text || text.trim(), photographs: photos });
       }
@@ -144,10 +166,10 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="font-extrabold text-sm sm:text-base tracking-wide uppercase truncate">
-                {initialEntry ? (canEditText ? 'Edit Entry & Photos' : 'Manage Entry Photos') : 'Add New Entry'}
+                {initialEntry ? (canEditText ? 'Edit Record & Photos' : 'Manage Record Photos') : 'Add New Record'}
               </h3>
               <span className="text-[10px] bg-navy-700 text-ocean-200 px-2 py-0.5 rounded font-mono font-bold uppercase tracking-wider shrink-0">
-                {sectionTitle}
+                {section === 'REMARK' ? '6. On Board Safety' : sectionTitle}
               </span>
             </div>
           </div>
@@ -169,10 +191,121 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
             </div>
           )}
 
+          {/* SAFETY STATUS (SAFE / UNSAFE) SELECTOR FOR ON BOARD SAFETY SECTION */}
+          {section === 'REMARK' && (
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-4">
+              <div>
+                <label className="block text-xs font-extrabold text-navy-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>Gangway Safety Status <span className="text-rose-500">*</span></span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    disabled={!canEditText}
+                    onClick={() => setSafetyStatus('SAFE')}
+                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border font-extrabold text-sm transition-all cursor-pointer min-h-[46px] ${
+                      safetyStatus === 'SAFE'
+                        ? 'bg-emerald-500 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/30'
+                        : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700'
+                    } ${!canEditText ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  >
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span>SAFE</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={!canEditText}
+                    onClick={() => setSafetyStatus('UNSAFE')}
+                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border font-extrabold text-sm transition-all cursor-pointer min-h-[46px] ${
+                      safetyStatus === 'UNSAFE'
+                        ? 'bg-rose-600 text-white border-rose-700 shadow-md ring-2 ring-rose-600/30'
+                        : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-700'
+                    } ${!canEditText ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  >
+                    <AlertTriangle className="w-5 h-5" />
+                    <span>UNSAFE</span>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Safety Category / Component
+                </label>
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  {['Gangway Safety', 'Deck Safety', 'Fire Safety', 'General Onboard Safety'].map((catItem) => (
+                    <button
+                      key={catItem}
+                      type="button"
+                      disabled={!canEditText}
+                      onClick={() => setCategory(catItem)}
+                      className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition-all cursor-pointer ${
+                        category === catItem
+                          ? 'bg-navy-800 text-white border-navy-900 shadow-xs'
+                          : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                      }`}
+                    >
+                      {catItem}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="text"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  disabled={!canEditText}
+                  placeholder="e.g. Gangway Safety"
+                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 text-xs font-medium focus:ring-2 focus:ring-navy-600 focus:border-navy-600"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* CATEGORY SELECTOR FOR VESSEL COORDINATION SECTION */}
+          {section === 'VESSEL_COORDINATION' && (
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Vessel Official / Coordination Category
+              </label>
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                {['Master / Captain', 'Chief Officer', 'Crew Behavior & Attitude', 'Damage Report'].map((catItem) => (
+                  <button
+                    key={catItem}
+                    type="button"
+                    disabled={!canEditText}
+                    onClick={() => setCategory(catItem)}
+                    className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition-all cursor-pointer ${
+                      category === catItem
+                        ? 'bg-navy-800 text-white border-navy-900 shadow-xs'
+                        : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                    }`}
+                  >
+                    {catItem}
+                  </button>
+                ))}
+              </div>
+              <input
+                type="text"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                disabled={!canEditText}
+                placeholder="e.g. Master / Captain attitude"
+                className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 text-xs font-medium focus:ring-2 focus:ring-navy-600 focus:border-navy-600"
+              />
+            </div>
+          )}
+
           <div>
             <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Description Text <span className="text-rose-500">*</span>
+                {section === 'REMARK'
+                  ? 'Safety Comments & Remarks'
+                  : section === 'VESSEL_COORDINATION'
+                  ? 'Officials Behavior & Coordination Notes'
+                  : 'Description Text'}{' '}
+                <span className="text-rose-500">*</span>
               </label>
               {!canEditText && (
                 <span className="text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-bold flex items-center gap-1 shrink-0">
@@ -185,7 +318,13 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
               onChange={(e) => setText(e.target.value)}
               rows={4}
               disabled={!canEditText}
-              placeholder="Enter detailed observation notes, maintenance actions taken, or inspection findings..."
+              placeholder={
+                section === 'REMARK'
+                  ? 'Enter safety comments, gangway condition notes, or inspection remarks...'
+                  : section === 'VESSEL_COORDINATION'
+                  ? 'Record notes regarding vessel officials behavior, attitude, cooperation during inspection/operation...'
+                  : 'Enter detailed observation notes, maintenance actions taken, or inspection findings...'
+              }
               required={canEditText}
               className={`w-full p-3.5 border rounded-xl text-slate-900 text-sm focus:outline-none font-sans ${
                 !canEditText
@@ -298,7 +437,7 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-navy-800 hover:bg-navy-900 transition-colors shadow-sm min-h-[44px] cursor-pointer"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              <span>{saving ? 'Saving...' : initialEntry ? 'Save Changes' : 'Save Entry'}</span>
+              <span>{saving ? 'Saving...' : initialEntry ? 'Save Changes' : 'Save Record'}</span>
             </button>
           </div>
         </form>

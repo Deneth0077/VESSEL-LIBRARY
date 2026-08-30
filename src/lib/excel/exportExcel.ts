@@ -201,7 +201,8 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
     { key: 'STRUCTURAL_DAMAGE', name: '3. Structural Damages', isRed: false },
     { key: 'OPERATIONAL_CHALLENGE', name: '4. Operational Challenges', isRed: false },
     { key: 'SPECIAL_NOTE', name: '5. Special Notes', isRed: true },
-    { key: 'REMARK', name: '6. Remarks', isRed: false },
+    { key: 'REMARK', name: '6. On Board Safety', isRed: false },
+    { key: 'VESSEL_COORDINATION', name: '7. Vessel Coordination', isRed: false },
   ];
 
   // ==========================================

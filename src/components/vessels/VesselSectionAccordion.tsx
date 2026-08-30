@@ -5,9 +5,11 @@ import { SectionType, IVesselEntry, IUser } from '@/types';
 import {
   Layers,
   ShieldAlert,
+  ShieldCheck,
   Compass,
   AlertCircle,
   ClipboardList,
+  Users,
   ChevronDown,
   ChevronRight,
   Plus,
@@ -47,6 +49,7 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
 
   const [entries, setEntries] = useState<IVesselEntry[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialCategoryForModal, setInitialCategoryForModal] = useState<string>('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<IVesselEntry | null>(null);
 
@@ -72,8 +75,13 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
       </span>
     ),
     REMARK: (
-      <span className="p-2.5 rounded-xl bg-slate-100 border border-slate-300 text-navy-700 shadow-xs flex items-center justify-center shrink-0">
-        <ClipboardList className="w-5 h-5 stroke-[2.2]" />
+      <span className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-700 shadow-xs flex items-center justify-center shrink-0">
+        <ShieldCheck className="w-5 h-5 stroke-[2.2]" />
+      </span>
+    ),
+    VESSEL_COORDINATION: (
+      <span className="p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 shadow-xs flex items-center justify-center shrink-0">
+        <Users className="w-5 h-5 stroke-[2.2]" />
       </span>
     ),
   };
@@ -99,7 +107,13 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
     }
   }, [isOpen, vesselId, section]);
 
-  const handleSaveEntry = async (data: { text: string; solution?: string; photographs: any[] }) => {
+  const handleSaveEntry = async (data: { 
+    text: string; 
+    solution?: string; 
+    safetyStatus?: 'SAFE' | 'UNSAFE' | ''; 
+    category?: string; 
+    photographs: any[] 
+  }) => {
     if (editingEntry) {
       const res = await fetch(`/api/entries/${editingEntry._id}`, {
         method: 'PATCH',
@@ -115,6 +129,8 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
           section,
           text: data.text,
           solution: data.solution || '',
+          safetyStatus: data.safetyStatus || '',
+          category: data.category || '',
           photographs: data.photographs,
         }),
       });
@@ -161,6 +177,8 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border shrink-0 w-fit ${
                   section === 'SPECIAL_NOTE'
                     ? 'bg-red-50 text-red-700 border-red-200'
+                    : section === 'REMARK'
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                     : 'bg-ocean-50 text-ocean-700 border-ocean-200'
                 }`}
               >
@@ -188,31 +206,60 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
             }`}>
               {title} Records & Documentation
             </span>
-            <button
-              onClick={() => {
-                setEditingEntry(null);
-                setModalOpen(true);
-              }}
-              className={`inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-xs shrink-0 whitespace-nowrap cursor-pointer min-h-[44px] w-full sm:w-auto ${
-                section === 'SPECIAL_NOTE'
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-navy-800 hover:bg-navy-900 text-white'
-              }`}
-            >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>Add New Entry</span>
-            </button>
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+              {section === 'REMARK' && (
+                <button
+                  onClick={() => {
+                    setEditingEntry(null);
+                    setInitialCategoryForModal('Gangway Safety');
+                    setModalOpen(true);
+                  }}
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs shrink-0 whitespace-nowrap cursor-pointer min-h-[44px] w-full sm:w-auto"
+                >
+                  <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
+                  <span>+ Gangway Safety Check</span>
+                </button>
+              )}
+              {section === 'VESSEL_COORDINATION' && (
+                <button
+                  onClick={() => {
+                    setEditingEntry(null);
+                    setInitialCategoryForModal('Damage Report');
+                    setModalOpen(true);
+                  }}
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-xs shrink-0 whitespace-nowrap cursor-pointer min-h-[44px] w-full sm:w-auto"
+                >
+                  <Plus className="w-4 h-4 stroke-[2.5]" />
+                  <span>+ Damage Report</span>
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setEditingEntry(null);
+                  setInitialCategoryForModal('');
+                  setModalOpen(true);
+                }}
+                className={`inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-xs shrink-0 whitespace-nowrap cursor-pointer min-h-[44px] w-full sm:w-auto ${
+                  section === 'SPECIAL_NOTE'
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-navy-800 hover:bg-navy-900 text-white'
+                }`}
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span>Add New Record</span>
+              </button>
+            </div>
           </div>
 
           {loading ? (
             <div className="py-8 flex items-center justify-center text-slate-400 gap-2">
               <Loader2 className="w-5 h-5 animate-spin text-navy-600" />
-              <span className="text-sm font-medium">Loading entries...</span>
+              <span className="text-sm font-medium">Loading records...</span>
             </div>
           ) : entries.length === 0 ? (
             <div className="p-6 bg-white rounded-xl border border-dashed border-slate-300 text-center space-y-2">
               <p className="text-sm font-semibold text-slate-600">No {title.toLowerCase()} records yet.</p>
-              <p className="text-xs text-slate-400">Click &quot;+ Add New Entry&quot; above to log inspection findings or notes with photographs.</p>
+              <p className="text-xs text-slate-400">Click &quot;+ Add New Record&quot; above to log inspection findings, notes, or photographs.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -223,6 +270,7 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
                   currentUser={currentUser}
                   onEdit={(item) => {
                     setEditingEntry(item);
+                    setInitialCategoryForModal('');
                     setModalOpen(true);
                   }}
                   onDelete={handleDeleteEntry}
@@ -239,10 +287,12 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
         section={section}
         sectionTitle={title}
         initialEntry={editingEntry}
+        initialCategory={initialCategoryForModal}
         currentUser={currentUser}
         onClose={() => {
           setModalOpen(false);
           setEditingEntry(null);
+          setInitialCategoryForModal('');
         }}
         onSave={handleSaveEntry}
       />

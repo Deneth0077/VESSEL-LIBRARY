@@ -28,6 +28,13 @@ export interface IPhotograph {
   caption?: string;
 }
 
+export interface IBayReeferConfig {
+  deck?: 'FWD' | 'AFT' | 'N/A' | '';
+  hold?: 'FWD' | 'AFT' | 'N/A' | '';
+}
+
+export type IReeferMotorConfig = Record<string, IBayReeferConfig>;
+
 export interface IVessel {
   _id: string;
   vesselName: string;
@@ -45,6 +52,7 @@ export interface IVessel {
   lashingBridges?: 'Yes' | 'No' | '';
   lashingBridgeHeight?: string;
   basicInformation?: string;
+  reeferMotorConfig?: IReeferMotorConfig;
   mainPhotographs: IPhotograph[];
   createdBy: string;
   updatedBy: string;
@@ -57,7 +65,8 @@ export type SectionType =
   | 'STRUCTURAL_DAMAGE'
   | 'OPERATIONAL_CHALLENGE'
   | 'SPECIAL_NOTE'
-  | 'REMARK';
+  | 'REMARK'
+  | 'VESSEL_COORDINATION';
 
 export interface IVesselEntry {
   _id: string;
@@ -65,6 +74,8 @@ export interface IVesselEntry {
   section: SectionType;
   text: string;
   solution?: string;
+  safetyStatus?: 'SAFE' | 'UNSAFE' | '';
+  category?: string;
   photographs: IPhotograph[];
   createdBy: string;
   createdByName: string;

@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { IVesselEntry, IUser } from '@/types';
 import { PhotoGallery } from './PhotoGallery';
 import { canEditOrDeleteEntry } from '@/lib/auth/rbac';
-import { X, Wrench, Edit2, Trash2, Clock, User as UserIcon, Eye } from 'lucide-react';
+import { X, Wrench, Edit2, Trash2, Clock, User as UserIcon, Eye, ShieldCheck, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface EntryDetailsModalProps {
   isOpen: boolean;
@@ -20,7 +20,8 @@ const sectionTitles: Record<string, string> = {
   STRUCTURAL_DAMAGE: '3. Vessel Structural Damages',
   OPERATIONAL_CHALLENGE: '4. Operational Challenges',
   SPECIAL_NOTE: '5. Special Notes',
-  REMARK: '6. Remarks',
+  REMARK: '6. On Board Safety',
+  VESSEL_COORDINATION: '7. Vessel Coordination',
 };
 
 export const EntryDetailsModal: React.FC<EntryDetailsModalProps> = ({
@@ -101,11 +102,10 @@ export const EntryDetailsModal: React.FC<EntryDetailsModalProps> = ({
                     onClose();
                     onEdit(entry);
                   }}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors min-h-[38px] cursor-pointer"
-                  title={canModify ? "Edit entry text & photographs" : "Add or manage entry photographs"}
+                  className="p-1.5 rounded-xl bg-white/10 hover:bg-ocean-600 text-slate-300 hover:text-white transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center shrink-0"
+                  title="Edit Record"
                 >
-                  <Edit2 className="w-3.5 h-3.5 text-ocean-300" />
-                  <span className="hidden xs:inline">{canModify ? 'Edit Entry' : 'Manage Photos'}</span>
+                  <Edit2 className="w-4 h-4" />
                 </button>
               )}
 
@@ -113,16 +113,15 @@ export const EntryDetailsModal: React.FC<EntryDetailsModalProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    if (confirm('Are you sure you want to delete this entire entry?')) {
+                    if (confirm('Are you sure you want to delete this inspection record?')) {
                       onClose();
                       onDelete(entry._id);
                     }
                   }}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white text-xs font-bold transition-colors min-h-[38px] cursor-pointer"
-                  title="Delete entry"
+                  className="p-1.5 rounded-xl bg-white/10 hover:bg-rose-600 text-slate-300 hover:text-white transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center shrink-0"
+                  title="Delete Record"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span className="hidden xs:inline">Delete</span>
+                  <Trash2 className="w-4 h-4" />
                 </button>
               )}
 
@@ -140,6 +139,31 @@ export const EntryDetailsModal: React.FC<EntryDetailsModalProps> = ({
 
         {/* Scrollable Content Body */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 flex-1 bg-slate-50">
+          {/* SAFETY STATUS BADGES & CATEGORY HIGHLIGHT */}
+          {(entry.safetyStatus || entry.category) && (
+            <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                <span className="text-xs font-extrabold uppercase text-slate-700 tracking-wider">
+                  Category: {entry.category || 'Gangway Safety'}
+                </span>
+              </div>
+
+              {entry.safetyStatus === 'SAFE' && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500 text-white font-extrabold text-xs shadow-xs border border-emerald-600">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>STATUS: SAFE</span>
+                </span>
+              )}
+              {entry.safetyStatus === 'UNSAFE' && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-600 text-white font-extrabold text-xs shadow-xs border border-rose-700">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>STATUS: UNSAFE</span>
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Main Description Card */}
           <div className={`p-4 sm:p-5 rounded-xl border shadow-xs space-y-2 ${
             entry.section === 'SPECIAL_NOTE'
@@ -149,7 +173,7 @@ export const EntryDetailsModal: React.FC<EntryDetailsModalProps> = ({
             <span className={`text-[10px] font-extrabold uppercase tracking-widest block font-mono ${
               entry.section === 'SPECIAL_NOTE' ? 'text-red-700' : 'text-slate-400'
             }`}>
-              OBSERVATION & DESCRIPTION TEXT
+              {entry.section === 'REMARK' ? 'SAFETY COMMENTS & REMARKS' : 'OBSERVATION & DESCRIPTION TEXT'}
             </span>
             <div className={`text-sm sm:text-base whitespace-pre-wrap leading-relaxed font-sans ${
               entry.section === 'SPECIAL_NOTE' ? 'text-red-900 font-bold' : 'text-slate-900 font-medium'

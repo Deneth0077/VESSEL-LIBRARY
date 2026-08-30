@@ -24,6 +24,7 @@ export const VesselFullDetailsModal: React.FC<VesselFullDetailsModalProps> = ({
     OPERATIONAL_CHALLENGE: [],
     SPECIAL_NOTE: [],
     REMARK: [],
+    VESSEL_COORDINATION: [],
   });
   const [loading, setLoading] = useState(false);
   // Prevent background body scrolling when modal is open
@@ -43,7 +44,8 @@ export const VesselFullDetailsModal: React.FC<VesselFullDetailsModalProps> = ({
     { key: 'STRUCTURAL_DAMAGE', code: 'SECTION 3.0', title: 'VESSEL STRUCTURAL DAMAGES' },
     { key: 'OPERATIONAL_CHALLENGE', code: 'SECTION 4.0', title: 'OPERATIONAL CHALLENGES' },
     { key: 'SPECIAL_NOTE', code: 'SECTION 5.0', title: 'SPECIAL NOTES' },
-    { key: 'REMARK', code: 'SECTION 6.0', title: 'REMARKS' },
+    { key: 'REMARK', code: 'SECTION 6.0', title: 'ON BOARD SAFETY' },
+    { key: 'VESSEL_COORDINATION', code: 'SECTION 7.0', title: 'VESSEL COORDINATION' },
   ];
 
   const fetchAllSectionEntries = async () => {
@@ -55,6 +57,7 @@ export const VesselFullDetailsModal: React.FC<VesselFullDetailsModalProps> = ({
         OPERATIONAL_CHALLENGE: [],
         SPECIAL_NOTE: [],
         REMARK: [],
+        VESSEL_COORDINATION: [],
       };
 
       for (const config of sectionConfigs) {
@@ -335,10 +338,27 @@ export const VesselFullDetailsModal: React.FC<VesselFullDetailsModalProps> = ({
                             key={entry._id}
                             className="bg-slate-50/80 rounded-lg border border-slate-200 p-4 space-y-3"
                           >
-                            <div className="flex items-center justify-between text-[11px] text-slate-500 border-b border-slate-200 pb-2">
-                              <span className="font-mono font-bold text-navy-900 uppercase">
-                                RECORD LOG #{idx + 1}
-                              </span>
+                            <div className="flex items-center justify-between text-[11px] text-slate-500 border-b border-slate-200 pb-2 flex-wrap gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono font-bold text-navy-900 uppercase">
+                                  RECORD LOG #{idx + 1}
+                                </span>
+                                {entry.category && (
+                                  <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-800 font-extrabold text-[10px] uppercase">
+                                    {entry.category}
+                                  </span>
+                                )}
+                                {entry.safetyStatus === 'SAFE' && (
+                                  <span className="px-2 py-0.5 rounded bg-emerald-500 text-white font-extrabold text-[10px] uppercase">
+                                    ✓ SAFE
+                                  </span>
+                                )}
+                                {entry.safetyStatus === 'UNSAFE' && (
+                                  <span className="px-2 py-0.5 rounded bg-rose-600 text-white font-extrabold text-[10px] uppercase">
+                                    ⚠️ UNSAFE
+                                  </span>
+                                )}
+                              </div>
                               <span>
                                 Filed by <strong className="text-navy-900">{entry.createdByName || 'Unknown'}</strong> ({createdDate})
                               </span>
