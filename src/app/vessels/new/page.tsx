@@ -358,12 +358,12 @@ export default function CreateVesselPage() {
                 }`}
               >
                 <option value="">-- Select Height --</option>
-                <option value="1 Height">1 Height</option>
-                <option value="2 Height">2 Height</option>
-                <option value="3 Height">3 Height</option>
-                <option value="4 Height">4 Height</option>
-                <option value="5 Height">5 Height</option>
-                <option value="6 Height">6 Height</option>
+                <option value="1 High">1 High</option>
+                <option value="2 High">2 High</option>
+                <option value="3 High">3 High</option>
+                <option value="4 High">4 High</option>
+                <option value="5 High">5 High</option>
+                <option value="6 High">6 High</option>
               </select>
             </div>
           </div>
