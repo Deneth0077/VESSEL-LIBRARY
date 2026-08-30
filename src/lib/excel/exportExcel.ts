@@ -117,7 +117,7 @@ export async function generateVesselExcelWorkbook(): Promise<Buffer> {
     { header: 'IMO Number', key: 'imoNumber', width: 16 },
     { header: 'Vessel Type', key: 'vesselType', width: 18 },
     { header: 'Flag State', key: 'flag', width: 16 },
-    { header: 'Owner / Operator', key: 'ownerOperator', width: 25 },
+    { header: 'Shipping Line', key: 'ownerOperator', width: 25 },
     { header: 'Call Sign', key: 'callSign', width: 14 },
     { header: 'Year Built', key: 'yearBuilt', width: 12 },
     { header: 'LOA (Length Over All)', key: 'loa', width: 22 },

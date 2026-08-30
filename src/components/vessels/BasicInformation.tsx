@@ -199,7 +199,7 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
 
         <div className="grid grid-cols-2 sm:grid-cols-4 bg-white">
           <div className="p-3 border-r border-b sm:border-b-0 border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">OWNER / OPERATOR</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">SHIPPING LINE</span>
             <span className="font-medium text-slate-800 text-xs block mt-0.5 truncate">{vessel.ownerOperator || 'N/A'}</span>
           </div>
 

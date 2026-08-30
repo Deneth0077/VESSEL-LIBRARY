@@ -199,11 +199,12 @@ export const EditVesselModal: React.FC<EditVesselModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Owner / Operator (Optional)</label>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Shipping Line (Optional)</label>
                 <input
                   type="text"
                   value={ownerOperator}
                   onChange={(e) => setOwnerOperator(e.target.value)}
+                  placeholder="e.g. MSC / Maersk / CMA CGM"
                   className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-navy-900"
                 />
               </div>

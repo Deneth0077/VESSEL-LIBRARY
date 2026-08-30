@@ -213,13 +213,13 @@ export default function CreateVesselPage() {
 
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-              Owner / Operator (Optional)
+              Shipping Line (Optional)
             </label>
             <input
               type="text"
               value={ownerOperator}
               onChange={(e) => setOwnerOperator(e.target.value)}
-              placeholder="e.g. Global Maritime Holdings Ltd."
+              placeholder="e.g. MSC / Maersk / CMA CGM"
               className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-navy-900 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600 min-h-[44px]"
             />
           </div>

@@ -62,7 +62,7 @@ export const VesselCard: React.FC<VesselCardProps> = ({ vessel }) => {
               <span className="text-navy-900 font-mono font-semibold">{vessel.callSign}</span>
             </div>
             <div className="col-span-2 flex items-center gap-1.5 truncate mt-0.5">
-              <span className="font-medium text-slate-400">Owner:</span>
+              <span className="font-medium text-slate-400">Line:</span>
               <span className="text-navy-800 font-semibold truncate">{vessel.ownerOperator}</span>
             </div>
           </div>
