@@ -41,7 +41,19 @@ export async function GET(
     const photo = await StoredPhoto.findOne({ filename }).lean();
 
     if (photo && photo.data) {
-      const buffer = Buffer.isBuffer(photo.data) ? photo.data : Buffer.from(photo.data);
+      const rawData = (photo as any).data;
+      let buffer: Buffer;
+      if (Buffer.isBuffer(rawData)) {
+        buffer = rawData;
+      } else if (rawData?.buffer && (Buffer.isBuffer(rawData.buffer) || rawData.buffer instanceof Uint8Array)) {
+        buffer = Buffer.from(rawData.buffer);
+      } else if (typeof rawData?.value === 'function') {
+        const val = rawData.value();
+        buffer = Buffer.isBuffer(val) ? val : Buffer.from(val);
+      } else {
+        buffer = Buffer.from(rawData);
+      }
+
       return new NextResponse(new Uint8Array(buffer), {
         status: 200,
         headers: {
