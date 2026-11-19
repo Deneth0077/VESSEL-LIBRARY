@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { IUser, IAuditLog, ILoginHistory } from '@/types';
 import { UserManagementTable } from '@/components/admin/UserManagementTable';
@@ -8,10 +8,11 @@ import { AuditLogTable } from '@/components/admin/AuditLogTable';
 import { LoginHistoryTable } from '@/components/admin/LoginHistoryTable';
 import { ExportButton } from '@/components/ui/ExportButton';
 import { Users, Ship, ShieldAlert, CheckCircle, Clock, Shield, Monitor, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<IUser | null>(null);
+  const { user: currentUser, loading: authLoading } = useAuth();
   const [users, setUsers] = useState<IUser[]>([]);
   const [vesselsCount, setVesselsCount] = useState<number>(0);
   const [auditLogs, setAuditLogs] = useState<IAuditLog[]>([]);
@@ -19,45 +20,33 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<'users' | 'audit' | 'loginHistory'>('users');
   const [loading, setLoading] = useState<boolean>(true);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
 
-      // Verify current user admin role
-      const meRes = await fetch('/api/auth/me');
-      if (!meRes.ok) {
-        router.push('/admin/login');
-        return;
-      }
-      const meData = await meRes.json();
-      if (meData?.user?.role !== 'ADMIN') {
-        router.push('/');
-        return;
-      }
-      setCurrentUser(meData.user);
+      // Fetch all admin data concurrently via Promise.all
+      const [usersRes, vesselsRes, auditRes, loginRes] = await Promise.all([
+        fetch('/api/users'),
+        fetch('/api/vessels'),
+        fetch('/api/audit?type=audit'),
+        fetch('/api/audit?type=login'),
+      ]);
 
-      // Fetch users
-      const usersRes = await fetch('/api/users');
       if (usersRes.ok) {
         const usersData = await usersRes.json();
         setUsers(usersData.users || []);
       }
 
-      // Fetch vessels count
-      const vesselsRes = await fetch('/api/vessels');
       if (vesselsRes.ok) {
         const vesselsData = await vesselsRes.json();
         setVesselsCount(vesselsData.count || 0);
       }
 
-      // Fetch audit logs & login history
-      const auditRes = await fetch('/api/audit?type=audit');
       if (auditRes.ok) {
         const auditData = await auditRes.json();
         setAuditLogs(auditData.auditLogs || []);
       }
 
-      const loginRes = await fetch('/api/audit?type=login');
       if (loginRes.ok) {
         const loginData = await loginRes.json();
         setLoginHistory(loginData.logins || []);
@@ -67,11 +56,16 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!currentUser || currentUser.role !== 'ADMIN') {
+      router.push('/admin/login');
+      return;
+    }
     fetchDashboardData();
-  }, []);
+  }, [currentUser, authLoading, router, fetchDashboardData]);
 
   const handleApprove = async (id: string) => {
     await fetch(`/api/users/${id}/approve`, { method: 'PATCH' });

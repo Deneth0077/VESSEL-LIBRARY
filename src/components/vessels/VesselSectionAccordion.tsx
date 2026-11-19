@@ -49,9 +49,38 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
 
   const [entries, setEntries] = useState<IVesselEntry[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [initialCategoryForModal, setInitialCategoryForModal] = useState<string>('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<IVesselEntry | null>(null);
+
+  // Reset loaded status if vessel or section changes
+  useEffect(() => {
+    setHasLoaded(false);
+  }, [vesselId, section]);
+
+  const fetchEntries = async (force: boolean = false) => {
+    if (hasLoaded && !force) return;
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/vessels/${vesselId}/entries?section=${section}`);
+      if (res.ok) {
+        const data = await res.json();
+        setEntries(data.entries || []);
+        setHasLoaded(true);
+      }
+    } catch (err) {
+      console.error(`Failed to fetch entries for ${section}:`, err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && !hasLoaded) {
+      fetchEntries();
+    }
+  }, [isOpen, hasLoaded]);
 
   const iconBadges: Record<SectionType, React.ReactNode> = {
     STRUCTURE: (
@@ -86,27 +115,6 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
     ),
   };
 
-  const fetchEntries = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/vessels/${vesselId}/entries?section=${section}`);
-      if (res.ok) {
-        const data = await res.json();
-        setEntries(data.entries || []);
-      }
-    } catch (err) {
-      console.error(`Failed to fetch entries for ${section}:`, err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchEntries();
-    }
-  }, [isOpen, vesselId, section]);
-
   const handleSaveEntry = async (data: { 
     text: string; 
     solution?: string; 
@@ -137,7 +145,7 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
       if (!res.ok) throw new Error('Failed to save entry');
     }
 
-    await fetchEntries();
+    await fetchEntries(true);
   };
 
   const handleDeleteEntry = async (entryId: string) => {

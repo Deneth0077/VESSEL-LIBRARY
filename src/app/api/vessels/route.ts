@@ -32,9 +32,20 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    const vessels = await Vessel.find(query).sort({ vesselName: 1 }).lean();
+    // Select only fields needed for card display & searching to minimize DB read & payload size
+    const vessels = await Vessel.find(query)
+      .select('vesselName imoNumber vesselType flag ownerOperator callSign yearBuilt mainPhotographs loa beam')
+      .sort({ vesselName: 1 })
+      .lean();
 
-    return NextResponse.json({ vessels, count: vessels.length });
+    return NextResponse.json(
+      { vessels, count: vessels.length },
+      {
+        headers: {
+          'Cache-Control': 'private, no-cache, no-transform',
+        },
+      }
+    );
   } catch (error) {
     console.error('Error fetching vessels:', error);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });

@@ -20,6 +20,8 @@ export const VesselCard: React.FC<VesselCardProps> = ({ vessel }) => {
           <img
             src={mainPhoto}
             alt={vessel.vesselName}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (

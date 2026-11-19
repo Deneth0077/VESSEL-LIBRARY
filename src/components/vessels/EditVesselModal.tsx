@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { IVessel, IPhotograph } from '@/types';
 import { X, Loader2, Save, Camera, Upload, Edit } from 'lucide-react';
+import { invalidateVesselCache } from '@/lib/cache/vesselCache';
 
 interface EditVesselModalProps {
   isOpen: boolean;
@@ -105,6 +106,7 @@ export const EditVesselModal: React.FC<EditVesselModalProps> = ({
         return;
       }
 
+      invalidateVesselCache();
       onSaveSuccess();
       onClose();
     } catch (err: any) {

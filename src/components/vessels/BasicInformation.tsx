@@ -7,6 +7,7 @@ import { EditVesselModal } from './EditVesselModal';
 import { ReeferMotorConfigurator } from './ReeferMotorConfigurator';
 import { canManageVessel } from '@/lib/auth/rbac';
 import { Camera, Loader2, Info, Edit, Ruler, Upload, AlertCircle } from 'lucide-react';
+import { invalidateVesselCache } from '@/lib/cache/vesselCache';
 
 interface BasicInformationProps {
   vessel: IVessel;
@@ -34,12 +35,11 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
 
     try {
       setUploading(true);
-      const newPhotos: IPhotograph[] = [...(vessel.mainPhotographs || [])];
 
-      for (let i = 0; i < filesArray.length; i++) {
+      const uploadPromises = filesArray.map(async (file, i) => {
         const formData = new FormData();
-        formData.append('file', filesArray[i]);
-        formData.append('caption', `Main Vessel Photograph ${newPhotos.length + 1}`);
+        formData.append('file', file);
+        formData.append('caption', `Main Vessel Photograph ${(vessel.mainPhotographs?.length || 0) + i + 1}`);
 
         const res = await fetch('/api/photos', {
           method: 'POST',
@@ -47,16 +47,15 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
         });
 
         const data = await res.json().catch(() => ({}));
-
-        if (!res.ok) {
-          alert(data.message || 'Failed to upload photograph.');
-          return;
+        if (res.ok && data.photo) {
+          return data.photo as IPhotograph;
+        } else {
+          throw new Error(data.message || 'Failed to upload photograph.');
         }
+      });
 
-        if (data.photo) {
-          newPhotos.push(data.photo);
-        }
-      }
+      const uploaded = await Promise.all(uploadPromises);
+      const newPhotos: IPhotograph[] = [...(vessel.mainPhotographs || []), ...uploaded];
 
       const patchRes = await fetch(`/api/vessels/${vessel._id}`, {
         method: 'PATCH',
@@ -70,6 +69,7 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
         return;
       }
 
+      invalidateVesselCache();
       if (onUpdateVessel) onUpdateVessel();
     } catch (err) {
       console.error('Failed uploading photo:', err);
@@ -102,6 +102,7 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
         return;
       }
 
+      invalidateVesselCache();
       if (onUpdateVessel) onUpdateVessel();
     } catch (err) {
       console.error('Error deleting photograph:', err);
@@ -318,7 +319,8 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
         onClose={() => setShowEditModal(false)}
         vessel={vessel}
         onSaveSuccess={() => {
-          if (onUpdateVessel) onUpdateVessel();
+          invalidateVesselCache();
+      if (onUpdateVessel) onUpdateVessel();
         }}
       />
     </div>

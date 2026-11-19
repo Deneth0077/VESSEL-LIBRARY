@@ -1,7 +1,15 @@
 import type { Metadata, Viewport } from 'next';
+import { Public_Sans } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import { PWAInstallPrompt } from '@/components/ui/PWAInstallPrompt';
+import { AuthProvider } from '@/context/AuthContext';
+
+const publicSans = Public_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700', '800'],
+});
 
 export const metadata: Metadata = {
   title: 'VESSEL LIBRARY — Fleet Management & Technical Documentation',
@@ -40,18 +48,20 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Vessel Library" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className="min-h-full flex flex-col font-sans antialiased text-navy-900 bg-surface" suppressHydrationWarning>
-        <Header />
-        <main className="flex-1 w-full">{children}</main>
-        <footer className="bg-navy-900 text-white border-t border-navy-800 py-6 mt-12 text-center text-xs text-slate-400">
-          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <span className="font-semibold text-white">VESSEL LIBRARY © {new Date().getFullYear()}</span>
-            <span>Maritime Technical Documentation System • IT Support</span>
-          </div>
-        </footer>
+      <body className={`min-h-full flex flex-col font-sans antialiased text-navy-900 bg-surface ${publicSans.className}`} suppressHydrationWarning>
+        <AuthProvider>
+          <Header />
+          <main className="flex-1 w-full">{children}</main>
+          <footer className="bg-navy-900 text-white border-t border-navy-800 py-6 mt-12 text-center text-xs text-slate-400">
+            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+              <span className="font-semibold text-white">VESSEL LIBRARY © {new Date().getFullYear()}</span>
+              <span>Maritime Technical Documentation System • IT Support</span>
+            </div>
+          </footer>
 
-        {/* Mobile PWA Add to Home Screen Banner Prompt */}
-        <PWAInstallPrompt />
+          {/* Mobile PWA Add to Home Screen Banner Prompt */}
+          <PWAInstallPrompt />
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,45 +1,40 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { IVessel, IUser, SectionType } from '@/types';
+import { IVessel, SectionType } from '@/types';
 import { BasicInformation } from '@/components/vessels/BasicInformation';
 import { VesselSectionAccordion } from '@/components/vessels/VesselSectionAccordion';
 import { VesselFullDetailsModal } from '@/components/vessels/VesselFullDetailsModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ArrowLeft, Trash2, Loader2, AlertCircle, Layers, FileText, Printer, Eye, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function VesselProfilePage() {
   const router = useRouter();
   const params = useParams();
   const vesselId = params.id as string;
+  const { user: currentUser } = useAuth();
 
   const [vessel, setVessel] = useState<IVessel | null>(null);
-  const [currentUser, setCurrentUser] = useState<IUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFullDetailsModal, setShowFullDetailsModal] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
 
-  const fetchVesselAndUser = async () => {
+  const fetchVessel = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
 
-      // Check current session
-      const meRes = await fetch('/api/auth/me');
-      if (!meRes.ok) {
-        router.push('/login');
-        return;
-      }
-      const meData = await meRes.json();
-      setCurrentUser(meData.user);
-
-      // Fetch vessel details
       const vesselRes = await fetch(`/api/vessels/${vesselId}`);
       if (!vesselRes.ok) {
+        if (vesselRes.status === 401) {
+          router.push('/login');
+          return;
+        }
         if (vesselRes.status === 404) {
           setError('Vessel profile not found.');
         } else {
@@ -55,13 +50,13 @@ export default function VesselProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [vesselId, router]);
 
   useEffect(() => {
     if (vesselId) {
-      fetchVesselAndUser();
+      fetchVessel();
     }
-  }, [vesselId]);
+  }, [vesselId, fetchVessel]);
 
   const handleDeleteVessel = async () => {
     try {
@@ -98,9 +93,50 @@ export default function VesselProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-navy-700" />
-        <span className="text-sm font-semibold text-slate-600">Loading Vessel Profile...</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 font-sans">
+        {/* Top Navigation Skeleton */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-200" />
+            <div className="space-y-2">
+              <div className="h-6 w-48 bg-slate-200 rounded" />
+              <div className="h-3 w-32 bg-slate-100 rounded" />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <div className="w-24 h-10 bg-slate-200 rounded-xl" />
+            <div className="w-20 h-10 bg-slate-100 rounded-xl" />
+          </div>
+        </div>
+
+        {/* Basic Information Section Skeleton */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6 animate-pulse">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div className="h-6 w-56 bg-slate-200 rounded" />
+            <div className="h-8 w-24 bg-slate-100 rounded-xl" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="h-48 bg-slate-100 rounded-xl" />
+            <div className="md:col-span-2 space-y-3">
+              <div className="h-4 bg-slate-200 rounded w-full" />
+              <div className="h-4 bg-slate-100 rounded w-5/6" />
+              <div className="h-4 bg-slate-100 rounded w-4/6" />
+              <div className="grid grid-cols-2 gap-3 pt-4">
+                <div className="h-10 bg-slate-100 rounded-lg" />
+                <div className="h-10 bg-slate-100 rounded-lg" />
+                <div className="h-10 bg-slate-100 rounded-lg" />
+                <div className="h-10 bg-slate-100 rounded-lg" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Accordions Skeleton */}
+        <div className="space-y-3 pt-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-16 bg-white rounded-2xl border border-slate-200 animate-pulse" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -182,7 +218,7 @@ export default function VesselProfilePage() {
 
       {/* SECTION 1: BASIC INFORMATION (AUTOMATICALLY VISIBLE BY DEFAULT) */}
       <div id="section-BASIC_INFO" className="scroll-mt-20">
-        <BasicInformation vessel={vessel} currentUser={currentUser} onUpdateVessel={fetchVesselAndUser} />
+        <BasicInformation vessel={vessel} currentUser={currentUser} onUpdateVessel={fetchVessel} />
       </div>
 
 

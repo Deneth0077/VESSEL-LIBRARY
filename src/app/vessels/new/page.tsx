@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { IPhotograph } from '@/types';
 import { Ship, Camera, Upload, X, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
+import { invalidateVesselCache } from '@/lib/cache/vesselCache';
 
 export default function CreateVesselPage() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const [vesselName, setVesselName] = useState('');
   const [imoNumber, setImoNumber] = useState('');
@@ -30,14 +33,6 @@ export default function CreateVesselPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetch('/api/auth/me').then((res) => {
-      if (!res.ok) {
-        router.push('/login');
-      }
-    });
-  }, [router]);
-
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -45,11 +40,11 @@ export default function CreateVesselPage() {
     try {
       setUploading(true);
       setError('');
-      const uploadedList = [...photos];
 
-      for (let i = 0; i < files.length; i++) {
+      const filesArray = Array.from(files);
+      const uploadPromises = filesArray.map(async (file) => {
         const formData = new FormData();
-        formData.append('file', files[i]);
+        formData.append('file', file);
         formData.append('caption', 'Main Vessel Photograph');
 
         const res = await fetch('/api/photos', {
@@ -57,20 +52,21 @@ export default function CreateVesselPage() {
           body: formData,
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          uploadedList.push(data.photo);
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.photo) {
+          return data.photo as IPhotograph;
         } else {
-          const errData = await res.json();
-          setError(errData.message || 'Error uploading photo');
+          throw new Error(data.message || 'Error uploading photo');
         }
-      }
+      });
 
-      setPhotos(uploadedList);
+      const uploaded = await Promise.all(uploadPromises);
+      setPhotos((prev) => [...prev, ...uploaded]);
     } catch (err: any) {
-      setError('Network error while uploading photo');
+      setError(err.message || 'Network error while uploading photo');
     } finally {
       setUploading(false);
+      if (e.target) e.target.value = '';
     }
   };
 
@@ -115,6 +111,7 @@ export default function CreateVesselPage() {
         return;
       }
 
+      invalidateVesselCache();
       // Open newly created vessel profile
       router.push(`/vessels/${data.vessel._id}`);
     } catch (err: any) {

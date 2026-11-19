@@ -6,33 +6,15 @@ import { useRouter, usePathname } from 'next/navigation';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { ExportButton } from '@/components/ui/ExportButton';
 import { Plus, Shield, LogOut, LogIn, User, Menu, X, ChevronDown, CheckCircle2, FileSpreadsheet } from 'lucide-react';
-import { IUser } from '@/types';
+import { useAuth } from '@/context/AuthContext';
 
 export const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<IUser | null>(null);
+  const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (['/login', '/register', '/pending', '/admin/login'].includes(pathname)) {
-      setUser(null);
-      return;
-    }
-
-    fetch('/api/auth/me')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.user) {
-          setUser(data.user);
-        } else {
-          setUser(null);
-        }
-      })
-      .catch(() => setUser(null));
-  }, [pathname]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -47,9 +29,7 @@ export const Header: React.FC = () => {
 
   const handleLogout = async () => {
     setProfileDropdownOpen(false);
-    await fetch('/api/auth/logout', { method: 'POST' });
-    setUser(null);
-    window.location.href = '/login';
+    await logout();
   };
 
   const isAuthPage = ['/login', '/register', '/admin/login'].includes(pathname);

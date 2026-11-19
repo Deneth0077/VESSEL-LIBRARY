@@ -60,11 +60,15 @@ export const VesselFullDetailsModal: React.FC<VesselFullDetailsModalProps> = ({
         VESSEL_COORDINATION: [],
       };
 
-      for (const config of sectionConfigs) {
-        const res = await fetch(`/api/vessels/${vessel._id}/entries?section=${config.key}`);
-        if (res.ok) {
-          const data = await res.json();
-          newEntries[config.key] = data.entries || [];
+      // Single fast query for all entries instead of 6 sequential queries
+      const res = await fetch(`/api/vessels/${vessel._id}/entries`);
+      if (res.ok) {
+        const data = await res.json();
+        const list: IVesselEntry[] = data.entries || [];
+        for (const entry of list) {
+          if (newEntries[entry.section]) {
+            newEntries[entry.section].push(entry);
+          }
         }
       }
 

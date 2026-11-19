@@ -1,74 +1,74 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { IVessel, IUser } from '@/types';
+import { IVessel } from '@/types';
 import { SearchBar } from '@/components/vessels/SearchBar';
 import { VesselCard } from '@/components/vessels/VesselCard';
 import { Plus, Ship, Loader2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { getCachedVessels, setCachedVessels, isCacheFresh } from '@/lib/cache/vesselCache';
 
 export default function HomePage() {
-  const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<IUser | null>(null);
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [vessels, setVessels] = useState<IVessel[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [authChecking, setAuthChecking] = useState(true);
+  
+  // Instant initial hydration from in-memory cache if available
+  const [vessels, setVessels] = useState<IVessel[]>(() => getCachedVessels() || []);
+  const [loading, setLoading] = useState<boolean>(() => !getCachedVessels());
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Authenticate user & load vessels
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.user) {
-          setCurrentUser(data.user);
-        } else {
-          router.push('/login');
-        }
-      })
-      .catch(() => {
-        router.push('/login');
-      })
-      .finally(() => {
-        setAuthChecking(false);
-      });
-  }, []);
-
-  const loadVessels = async (queryStr: string = '') => {
+  const fetchVessels = useCallback(async (queryStr: string = '') => {
     try {
       setLoading(true);
       const res = await fetch(`/api/vessels?q=${encodeURIComponent(queryStr)}`);
       if (res.ok) {
         const data = await res.json();
-        setVessels(data.vessels || []);
+        const list: IVessel[] = data.vessels || [];
+        setVessels(list);
+        if (!queryStr.trim()) {
+          setCachedVessels(list);
+        }
       }
     } catch (err) {
-      console.error('Error searching vessels:', err);
+      console.error('Error loading vessels:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
+  // Initial load: fetch immediately without delay if cache isn't fresh
   useEffect(() => {
-    if (!currentUser) return;
-    const timer = setTimeout(() => {
-      loadVessels(searchQuery);
-    }, 250);
+    if (!isCacheFresh()) {
+      fetchVessels('');
+    }
+  }, [fetchVessels]);
 
-    return () => clearTimeout(timer);
-  }, [searchQuery, currentUser]);
+  // Fast search handling: instantaneous client-side filter + debounced server query
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
 
-  if (authChecking || !currentUser) {
-    return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-3">
-        <Loader2 className="w-8 h-8 text-navy-800 animate-spin" />
-        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-          Verifying Session & Loading Directory...
-        </span>
-      </div>
-    );
-  }
+    if (!trimmed) {
+      const cached = getCachedVessels();
+      if (cached) {
+        setVessels(cached);
+        setLoading(false);
+      } else {
+        fetchVessels('');
+      }
+      return;
+    }
+
+    // Debounce server query for active search typing
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      fetchVessels(trimmed);
+    }, 200);
+
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, [searchQuery, fetchVessels]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 font-sans">
@@ -116,9 +116,9 @@ export default function HomePage() {
             {searchQuery ? `Search Results (${vessels.length})` : `Fleet Directory (${vessels.length})`}
           </h2>
           {loading && (
-            <div className="flex items-center gap-1.5 text-xs text-ocean-600 font-semibold">
+            <div className="flex items-center gap-1.5 text-xs text-ocean-600 font-semibold animate-pulse">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Searching database...</span>
+              <span>Updating fleet...</span>
             </div>
           )}
         </div>
@@ -126,7 +126,25 @@ export default function HomePage() {
         {loading && vessels.length === 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[1, 2, 3, 4].map((n) => (
-              <div key={n} className="h-40 bg-white rounded-xl border border-slate-200 animate-pulse" />
+              <div
+                key={n}
+                className="h-44 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row overflow-hidden animate-pulse"
+              >
+                <div className="w-full sm:w-52 h-44 bg-slate-200 shrink-0" />
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                  <div className="space-y-2">
+                    <div className="h-5 bg-slate-200 rounded w-2/3" />
+                    <div className="h-3 bg-slate-100 rounded w-1/3" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="h-3 bg-slate-100 rounded" />
+                    <div className="h-3 bg-slate-100 rounded" />
+                    <div className="h-3 bg-slate-100 rounded" />
+                    <div className="h-3 bg-slate-100 rounded" />
+                  </div>
+                  <div className="h-3 bg-slate-100 rounded w-1/2" />
+                </div>
+              </div>
             ))}
           </div>
         ) : vessels.length === 0 ? (
@@ -141,7 +159,7 @@ export default function HomePage() {
             <div className="pt-2">
               <Link
                 href="/vessels/new"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-navy-800 text-white font-bold text-xs shadow-sm"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-navy-800 text-white font-bold text-xs shadow-sm hover:bg-navy-900 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 <span>Create First Vessel Profile</span>

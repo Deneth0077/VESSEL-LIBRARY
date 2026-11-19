@@ -61,7 +61,7 @@ export async function verifySession(token?: string): Promise<IUser | null> {
 
     // Verify DB user status on every request!
     await dbConnect();
-    const user = await User.findById(payload.userId).select('-pinHash');
+    const user = await User.findById(payload.userId).select('-pinHash').lean();
 
     if (!user) {
       return null;
@@ -72,10 +72,9 @@ export async function verifySession(token?: string): Promise<IUser | null> {
       return null;
     }
 
-    const userObj = user.toObject();
     return {
-      ...userObj,
-      _id: userObj._id.toString(),
+      ...user,
+      _id: user._id.toString(),
     } as unknown as IUser;
   } catch (error) {
     return null;

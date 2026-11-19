@@ -14,6 +14,7 @@ declare global {
 }
 
 let cached = global.mongooseCache;
+let hasSeeded = false;
 
 if (!cached) {
   cached = global.mongooseCache = { conn: null, promise: null };
@@ -27,7 +28,9 @@ export async function dbConnect(): Promise<typeof mongoose> {
   if (!cached?.promise) {
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 5000, // 5s fast timeout
+      serverSelectionTimeoutMS: 5000,
+      maxPoolSize: 10,
+      minPoolSize: 1,
     };
 
     const primaryUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/vessels_db';
@@ -50,8 +53,12 @@ export async function dbConnect(): Promise<typeof mongoose> {
           throw new Error('Database connection failed. Please whitelist your IP address in MongoDB Atlas (0.0.0.0/0).');
         }
       })
-      .then(async (m) => {
-        await seedDefaultAdmin(m);
+      .then((m) => {
+        // Trigger seed check in background without blocking database readiness
+        if (!hasSeeded) {
+          hasSeeded = true;
+          seedDefaultAdmin(m).catch((err) => console.error('Error auto-seeding default data:', err));
+        }
         return m;
       });
   }

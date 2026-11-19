@@ -82,6 +82,8 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
             <img
               src={photo.url}
               alt={photo.caption || photo.filename || 'Vessel photograph'}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
             <div className="absolute inset-0 bg-navy-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-2">
