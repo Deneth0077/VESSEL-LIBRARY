@@ -8,7 +8,9 @@ interface VesselCardProps {
 }
 
 export const VesselCard: React.FC<VesselCardProps> = ({ vessel }) => {
+  const [imgError, setImgError] = React.useState(false);
   const mainPhoto = vessel.mainPhotographs?.[0]?.url;
+  const showPhoto = Boolean(mainPhoto && !imgError);
 
   return (
     <Link
@@ -16,10 +18,11 @@ export const VesselCard: React.FC<VesselCardProps> = ({ vessel }) => {
       className="group bg-white rounded-xl border border-slate-200 hover:border-navy-500 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row overflow-hidden font-sans"
     >
       <div className="relative w-full sm:w-52 h-44 sm:h-auto bg-slate-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
-        {mainPhoto ? (
+        {showPhoto ? (
           <img
             src={mainPhoto}
             alt={vessel.vesselName}
+            onError={() => setImgError(true)}
             loading="lazy"
             decoding="async"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

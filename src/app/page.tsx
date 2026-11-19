@@ -13,9 +13,9 @@ export default function HomePage() {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Instant initial hydration from in-memory cache if available
-  const [vessels, setVessels] = useState<IVessel[]>(() => getCachedVessels() || []);
-  const [loading, setLoading] = useState<boolean>(() => !getCachedVessels());
+  // Initialize state with clean defaults matching SSR
+  const [vessels, setVessels] = useState<IVessel[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchVessels = useCallback(async (queryStr: string = '') => {
@@ -37,8 +37,13 @@ export default function HomePage() {
     }
   }, []);
 
-  // Initial load: fetch immediately without delay if cache isn't fresh
+  // Initial load: safely hydrate from cache on mount without SSR mismatch
   useEffect(() => {
+    const cached = getCachedVessels();
+    if (cached && cached.length > 0) {
+      setVessels(cached);
+      setLoading(false);
+    }
     if (!isCacheFresh()) {
       fetchVessels('');
     }

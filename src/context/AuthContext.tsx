@@ -18,24 +18,14 @@ const AuthContext = createContext<AuthContextType>({
   refreshUser: async () => { },
 });
 
-const PUBLIC_ROUTES = ['/login', '/register', '/pending', '/admin/login'];
+const PUBLIC_ROUTES = ['/login', '/register', '/pending', '/admin/login', '/install'];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<IUser | null>(() => {
-    // Fast synchronous initial hydration from sessionStorage if available
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = sessionStorage.getItem('vessel_auth_user');
-        if (stored) return JSON.parse(stored);
-      } catch (e) {
-        // ignore
-      }
-    }
-    return null;
-  });
-  const [loading, setLoading] = useState<boolean>(!user);
+  // Initialize with null to match SSR exactly and eliminate Hydration errors
+  const [user, setUser] = useState<IUser | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const fetchUser = useCallback(async () => {
     if (PUBLIC_ROUTES.includes(pathname)) {
@@ -82,6 +72,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [pathname, router]);
 
   useEffect(() => {
+    // Safely hydrate cached user on client mount without triggering SSR mismatch
+    try {
+      const stored = sessionStorage.getItem('vessel_auth_user');
+      if (stored) {
+        setUser(JSON.parse(stored));
+        setLoading(false);
+      }
+    } catch (e) {}
+
     fetchUser();
   }, [fetchUser]);
 
