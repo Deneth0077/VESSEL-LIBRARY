@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { AppLogo } from '@/components/ui/AppLogo';
 import { ExportButton } from '@/components/ui/ExportButton';
-import { Plus, Shield, LogOut, LogIn, User, Menu, X, ChevronDown, CheckCircle2, FileSpreadsheet } from 'lucide-react';
+import { Plus, Shield, LogOut, LogIn, User, Menu, X, ChevronDown, CheckCircle2, FileSpreadsheet, Smartphone } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export const Header: React.FC = () => {
@@ -131,6 +131,17 @@ export const Header: React.FC = () => {
                             <span>System Admin Dashboard</span>
                           </Link>
                         )}
+
+                        <button
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            window.dispatchEvent(new Event('open-pwa-install'));
+                          }}
+                          className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer text-left"
+                        >
+                          <Smartphone className="w-4 h-4 text-emerald-600" />
+                          <span>Install Android / Mobile App</span>
+                        </button>
                       </div>
 
                       {/* Logout Action */}
@@ -226,6 +237,17 @@ export const Header: React.FC = () => {
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
+                  window.dispatchEvent(new Event('open-pwa-install'));
+                }}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-emerald-50 text-emerald-800 active:scale-98 border border-emerald-200 font-bold text-sm min-h-[46px] cursor-pointer"
+              >
+                <Smartphone className="w-5 h-5 text-emerald-600" />
+                <span>Install Mobile App (Android / iOS)</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
                   handleLogout();
                 }}
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-rose-700 bg-rose-50 active:scale-98 border border-rose-200 font-bold text-sm min-h-[46px] cursor-pointer"
@@ -235,14 +257,26 @@ export const Header: React.FC = () => {
               </button>
             </>
           ) : (
-            <Link
-              href="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-navy-800 text-white font-bold text-sm min-h-[46px]"
-            >
-              <LogIn className="w-5 h-5" />
-              <span>Sign In</span>
-            </Link>
+            <div className="space-y-2">
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-navy-800 text-white font-bold text-sm min-h-[46px]"
+              >
+                <LogIn className="w-5 h-5" />
+                <span>Sign In</span>
+              </Link>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.dispatchEvent(new Event('open-pwa-install'));
+                }}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-emerald-50 text-emerald-800 active:scale-98 border border-emerald-200 font-bold text-sm min-h-[46px] cursor-pointer"
+              >
+                <Smartphone className="w-5 h-5 text-emerald-600" />
+                <span>Install Mobile App (Android)</span>
+              </button>
+            </div>
           )}
         </div>
       )}

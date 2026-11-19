@@ -47,6 +47,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Vessel Library" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0F172A" />
       </head>
       <body className={`min-h-full flex flex-col font-sans antialiased text-navy-900 bg-surface ${publicSans.className}`} suppressHydrationWarning>
         <AuthProvider>

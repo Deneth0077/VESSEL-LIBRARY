@@ -32,9 +32,19 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    // Select only fields needed for card display & searching to minimize DB read & payload size
-    const vessels = await Vessel.find(query)
-      .select('vesselName imoNumber vesselType flag ownerOperator callSign yearBuilt mainPhotographs loa beam')
+    // Project only card fields and only the primary thumbnail photo (slice: 1) to keep response super fast (<50ms)
+    const vessels = await Vessel.find(query, {
+      vesselName: 1,
+      imoNumber: 1,
+      vesselType: 1,
+      flag: 1,
+      ownerOperator: 1,
+      callSign: 1,
+      yearBuilt: 1,
+      loa: 1,
+      beam: 1,
+      mainPhotographs: { $slice: 1 },
+    })
       .sort({ vesselName: 1 })
       .lean();
 

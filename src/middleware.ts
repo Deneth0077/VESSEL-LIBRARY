@@ -4,11 +4,14 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. Always allow Next.js static assets, Webpack chunks, CSS, images, and favicon
+  // 1. Always allow Next.js static assets, Service Worker, Webpack chunks, CSS, images, and favicon
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
     pathname.startsWith('/uploads') ||
+    pathname === '/sw.js' ||
+    pathname === '/manifest.json' ||
+    pathname === '/manifest.webmanifest' ||
     pathname.includes('.') ||
     pathname === '/favicon.ico'
   ) {
@@ -16,7 +19,7 @@ export function middleware(request: NextRequest) {
   }
 
   // 2. Public auth routes & API auth routes
-  const publicRoutes = ['/login', '/register', '/pending', '/admin/login'];
+  const publicRoutes = ['/login', '/register', '/pending', '/admin/login', '/install'];
   const isPublicRoute =
     publicRoutes.includes(pathname) ||
     pathname.startsWith('/api/auth');

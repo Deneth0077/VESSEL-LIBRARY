@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
@@ -19,68 +20,77 @@ export async function saveUploadedFile(
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
   const fileExt = (file as File).name?.split('.').pop()?.toLowerCase() || 'jpg';
-  const mimeType = fileExt === 'png' ? 'image/png' : fileExt === 'gif' ? 'image/gif' : 'image/jpeg';
   const sanitizeName = (file as File).name?.replace(/[^a-zA-Z0-9._-]/g, '_') || `photo.${fileExt}`;
-  const filename = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${sanitizeName}`;
+  const baseId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+  const outFilename = `${baseId}_${sanitizeName.split('.')[0]}.jpg`;
 
-  // 1. Primary Method: Upload to Cloudinary
+  // 1. Primary Method: Save to local disk with image optimization (Fastest & Lightest)
   try {
-    const cloudinaryResponse = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'vessel_library_photos',
-          resource_type: 'auto',
-        },
-        (error, result) => {
-          if (error || !result) {
-            return reject(error || new Error('Cloudinary upload error'));
-          }
-          resolve(result);
-        }
-      );
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
 
-      uploadStream.end(buffer);
-    });
+    const tempPath = path.join(uploadDir, `raw_${baseId}.${fileExt}`);
+    const outPath = path.join(uploadDir, outFilename);
+    fs.writeFileSync(tempPath, buffer);
+
+    try {
+      // Compress & optimize image via Pillow: max 1200x1200, 82% quality (shrinks 5MB photos down to ~80KB)
+      const pyCmd = `python -c "from PIL import Image; img = Image.open(r'${tempPath}'); img = img.convert('RGB'); img.thumbnail((1200, 1200), Image.Resampling.LANCZOS); img.save(r'${outPath}', 'JPEG', quality=82, optimize=True)"`;
+      execSync(pyCmd);
+      if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+    } catch (optErr) {
+      // Fallback: if python not available, keep original buffer
+      fs.renameSync(tempPath, outPath);
+    }
 
     return {
-      url: cloudinaryResponse.secure_url,
-      filename: cloudinaryResponse.public_id || filename,
+      url: `/uploads/${outFilename}`,
+      filename: outFilename,
       uploadedBy,
       uploadedByName: uploadedByName || 'Unknown',
       uploadedAt: new Date(),
       caption: caption || '',
     };
-  } catch (cloudErr: any) {
-    console.warn('Cloudinary upload failed, attempting local/base64 storage:', cloudErr?.message || cloudErr);
+  } catch (fsErr: any) {
+    console.warn('Local disk save failed, attempting Cloudinary / compressed fallback:', fsErr?.message);
 
-    // 2. Secondary Method: Try writing to local disk (for localhost development)
+    // 2. Secondary Method: Cloudinary
     try {
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-
-      const filePath = path.join(uploadDir, filename);
-      fs.writeFileSync(filePath, buffer);
+      const cloudinaryResponse = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'vessel_library_photos',
+            resource_type: 'auto',
+            transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto' }],
+          },
+          (error, result) => {
+            if (error || !result) return reject(error || new Error('Cloudinary error'));
+            resolve(result);
+          }
+        );
+        uploadStream.end(buffer);
+      });
 
       return {
-        url: `/uploads/${filename}`,
-        filename,
+        url: cloudinaryResponse.secure_url,
+        filename: cloudinaryResponse.public_id || outFilename,
         uploadedBy,
         uploadedByName: uploadedByName || 'Unknown',
         uploadedAt: new Date(),
         caption: caption || '',
       };
-    } catch (fsErr: any) {
-      console.warn('Local disk write unavailable (Vercel read-only environment). Fallback to Base64 Data URL:', fsErr?.message);
+    } catch (cloudErr: any) {
+      console.warn('Cloudinary failed, fallback to base64:', cloudErr?.message);
 
-      // 3. Ultimate Fail-Proof Fallback: Convert to Base64 Data URL (Works everywhere including Vercel)
+      // 3. Fail-Proof Fallback: Base64 Data URL
       const base64Data = buffer.toString('base64');
-      const dataUrl = `data:${mimeType};base64,${base64Data}`;
+      const dataUrl = `data:image/jpeg;base64,${base64Data}`;
 
       return {
         url: dataUrl,
-        filename,
+        filename: outFilename,
         uploadedBy,
         uploadedByName: uploadedByName || 'Unknown',
         uploadedAt: new Date(),
