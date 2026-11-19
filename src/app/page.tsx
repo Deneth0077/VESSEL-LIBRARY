@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { getCachedVessels, setCachedVessels, isCacheFresh } from '@/lib/cache/vesselCache';
 
 export default function HomePage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   
   // Initialize state with clean defaults matching SSR
@@ -75,8 +75,28 @@ export default function HomePage() {
     };
   }, [searchQuery, fetchVessels]);
 
+  // Coordinated Initial Load: Wait until data is ready so the entire page renders all at once
+  if (authLoading || (loading && vessels.length === 0)) {
+    return (
+      <div className="min-h-[65vh] flex flex-col items-center justify-center space-y-4 font-sans animate-in fade-in duration-150">
+        <div className="relative">
+          <div className="w-16 h-16 rounded-2xl bg-navy-900 text-white flex items-center justify-center shadow-lg">
+            <Ship className="w-8 h-8 stroke-[2]" />
+          </div>
+          <div className="absolute -bottom-1 -right-1">
+            <Loader2 className="w-5 h-5 text-ocean-600 animate-spin" />
+          </div>
+        </div>
+        <div className="text-center space-y-1">
+          <h2 className="text-base font-extrabold text-navy-900 tracking-wider uppercase">VESSEL LIBRARY</h2>
+          <p className="text-xs text-slate-500 font-medium">Loading Maritime Fleet System...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 font-sans">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 font-sans animate-in fade-in duration-200">
       {/* Primary Uncluttered Hero Search Section */}
       <div className="max-w-3xl mx-auto text-center space-y-5">
         <div className="inline-flex items-center justify-center p-3.5 rounded-2xl bg-navy-900 text-white shadow-md">
@@ -128,31 +148,7 @@ export default function HomePage() {
           )}
         </div>
 
-        {loading && vessels.length === 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map((n) => (
-              <div
-                key={n}
-                className="h-44 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row overflow-hidden animate-pulse"
-              >
-                <div className="w-full sm:w-52 h-44 bg-slate-200 shrink-0" />
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-                  <div className="space-y-2">
-                    <div className="h-5 bg-slate-200 rounded w-2/3" />
-                    <div className="h-3 bg-slate-100 rounded w-1/3" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="h-3 bg-slate-100 rounded" />
-                    <div className="h-3 bg-slate-100 rounded" />
-                    <div className="h-3 bg-slate-100 rounded" />
-                    <div className="h-3 bg-slate-100 rounded" />
-                  </div>
-                  <div className="h-3 bg-slate-100 rounded w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : vessels.length === 0 ? (
+        {vessels.length === 0 ? (
           <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center space-y-3">
             <Ship className="w-12 h-12 text-slate-300 mx-auto" />
             <h3 className="text-lg font-bold text-navy-800">No vessels found</h3>

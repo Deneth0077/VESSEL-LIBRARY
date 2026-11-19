@@ -8,7 +8,7 @@ import { BasicInformation } from '@/components/vessels/BasicInformation';
 import { VesselSectionAccordion } from '@/components/vessels/VesselSectionAccordion';
 import { VesselFullDetailsModal } from '@/components/vessels/VesselFullDetailsModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { ArrowLeft, Trash2, Loader2, AlertCircle, Layers, FileText, Printer, Eye, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Trash2, Loader2, AlertCircle, Layers, FileText, Printer, Eye, CheckCircle2, Ship } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function VesselProfilePage() {
@@ -93,49 +93,18 @@ export default function VesselProfilePage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 font-sans">
-        {/* Top Navigation Skeleton */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between animate-pulse">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-200" />
-            <div className="space-y-2">
-              <div className="h-6 w-48 bg-slate-200 rounded" />
-              <div className="h-3 w-32 bg-slate-100 rounded" />
-            </div>
+      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4 font-sans animate-in fade-in duration-150">
+        <div className="relative">
+          <div className="w-16 h-16 rounded-2xl bg-navy-900 text-white flex items-center justify-center shadow-lg">
+            <Ship className="w-8 h-8 stroke-[2]" />
           </div>
-          <div className="flex gap-2">
-            <div className="w-24 h-10 bg-slate-200 rounded-xl" />
-            <div className="w-20 h-10 bg-slate-100 rounded-xl" />
+          <div className="absolute -bottom-1 -right-1">
+            <Loader2 className="w-5 h-5 text-ocean-600 animate-spin" />
           </div>
         </div>
-
-        {/* Basic Information Section Skeleton */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6 animate-pulse">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <div className="h-6 w-56 bg-slate-200 rounded" />
-            <div className="h-8 w-24 bg-slate-100 rounded-xl" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="h-48 bg-slate-100 rounded-xl" />
-            <div className="md:col-span-2 space-y-3">
-              <div className="h-4 bg-slate-200 rounded w-full" />
-              <div className="h-4 bg-slate-100 rounded w-5/6" />
-              <div className="h-4 bg-slate-100 rounded w-4/6" />
-              <div className="grid grid-cols-2 gap-3 pt-4">
-                <div className="h-10 bg-slate-100 rounded-lg" />
-                <div className="h-10 bg-slate-100 rounded-lg" />
-                <div className="h-10 bg-slate-100 rounded-lg" />
-                <div className="h-10 bg-slate-100 rounded-lg" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Accordions Skeleton */}
-        <div className="space-y-3 pt-2">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-16 bg-white rounded-2xl border border-slate-200 animate-pulse" />
-          ))}
+        <div className="text-center space-y-1">
+          <h2 className="text-base font-extrabold text-navy-900 tracking-wider uppercase">Loading Vessel Profile</h2>
+          <p className="text-xs text-slate-500 font-medium">Retrieving technical specifications & documentation...</p>
         </div>
       </div>
     );

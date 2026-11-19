@@ -23,8 +23,7 @@ export const VesselCard: React.FC<VesselCardProps> = ({ vessel }) => {
             src={mainPhoto}
             alt={vessel.vesselName}
             onError={() => setImgError(true)}
-            loading="lazy"
-            decoding="async"
+            decoding="sync"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (

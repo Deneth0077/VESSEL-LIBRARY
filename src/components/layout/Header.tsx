@@ -11,7 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 export const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -43,7 +43,9 @@ export const Header: React.FC = () => {
         {/* Desktop Navigation */}
         {!isAuthPage && (
           <div className="hidden md:flex items-center gap-3">
-            {user ? (
+            {authLoading ? (
+              <div className="h-10 min-w-[220px]" />
+            ) : user ? (
               <>
                 <Link
                   href="/vessels/new"
