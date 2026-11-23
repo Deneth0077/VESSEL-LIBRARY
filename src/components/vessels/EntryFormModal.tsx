@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { SectionType, IPhotograph, IVesselEntry, IUser } from '@/types';
 import { canEditOrDeleteEntry } from '@/lib/auth/rbac';
+import { compressImageClient } from '@/lib/utils/imageCompressor';
 import { Camera, Upload, X, Loader2, Image as ImageIcon, Plus, Wrench, Lock, ShieldCheck, ShieldAlert, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface EntryFormModalProps {
@@ -96,7 +97,8 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
       setUploading(true);
       setError('');
 
-      const uploadPromises = filesArray.map(async (file, i) => {
+      const uploadPromises = filesArray.map(async (rawFile, i) => {
+        const file = await compressImageClient(rawFile);
         const formData = new FormData();
         formData.append('file', file);
         formData.append('caption', `${sectionTitle} Photo ${photos.length + i + 1}`);

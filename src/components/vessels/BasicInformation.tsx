@@ -8,6 +8,7 @@ import { ReeferMotorConfigurator } from './ReeferMotorConfigurator';
 import { canManageVessel } from '@/lib/auth/rbac';
 import { Camera, Loader2, Info, Edit, Ruler, Upload, AlertCircle } from 'lucide-react';
 import { invalidateVesselCache } from '@/lib/cache/vesselCache';
+import { compressImageClient } from '@/lib/utils/imageCompressor';
 
 interface BasicInformationProps {
   vessel: IVessel;
@@ -36,7 +37,8 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
     try {
       setUploading(true);
 
-      const uploadPromises = filesArray.map(async (file, i) => {
+      const uploadPromises = filesArray.map(async (rawFile, i) => {
+        const file = await compressImageClient(rawFile);
         const formData = new FormData();
         formData.append('file', file);
         formData.append('caption', `Main Vessel Photograph ${(vessel.mainPhotographs?.length || 0) + i + 1}`);

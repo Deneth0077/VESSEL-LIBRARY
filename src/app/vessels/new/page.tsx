@@ -7,6 +7,7 @@ import { Ship, Camera, Upload, X, Loader2, ArrowLeft, CheckCircle2 } from 'lucid
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { invalidateVesselCache } from '@/lib/cache/vesselCache';
+import { compressImageClient } from '@/lib/utils/imageCompressor';
 
 export default function CreateVesselPage() {
   const router = useRouter();
@@ -42,7 +43,8 @@ export default function CreateVesselPage() {
       setError('');
 
       const filesArray = Array.from(files);
-      const uploadPromises = filesArray.map(async (file) => {
+      const uploadPromises = filesArray.map(async (rawFile) => {
+        const file = await compressImageClient(rawFile);
         const formData = new FormData();
         formData.append('file', file);
         formData.append('caption', 'Main Vessel Photograph');

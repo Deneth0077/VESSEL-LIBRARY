@@ -120,6 +120,19 @@ export async function saveUploadedFile(
     console.error('Failed storing photo to MongoDB:', dbErr);
   }
 
+  // If photo is optimized and lightweight (<= 350KB), return instant Data URL so it renders immediately without broken icons
+  if (buffer.length <= 350 * 1024) {
+    const dataUrl = `data:image/jpeg;base64,${buffer.toString('base64')}`;
+    return {
+      url: dataUrl,
+      filename: outFilename,
+      uploadedBy,
+      uploadedByName: uploadedByName || 'Unknown',
+      uploadedAt: new Date(),
+      caption: caption || '',
+    };
+  }
+
   return {
     url: `/uploads/${outFilename}`,
     filename: outFilename,
