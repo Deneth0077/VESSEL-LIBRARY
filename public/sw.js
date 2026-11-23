@@ -1,5 +1,5 @@
 // VESSEL LIBRARY Service Worker for Android (All Versions) & iOS PWA
-const CACHE_NAME = 'vessel-lib-cache-v2';
+const CACHE_NAME = 'vessel-lib-cache-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -48,8 +48,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // API calls & Uploaded Vessel Photos: Bypass Service Worker directly to browser for fastest zero-overhead loading
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/uploads/')) {
+  // API calls, Uploaded Vessel Photos & Next.js chunks: Bypass Service Worker directly to browser
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/uploads/') || url.pathname.startsWith('/_next/')) {
     return;
   }
 
