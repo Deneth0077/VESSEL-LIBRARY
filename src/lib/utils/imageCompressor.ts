@@ -69,3 +69,4 @@ export async function compressImageClient(file: File, maxDimension = 1400, quali
     reader.readAsDataURL(file);
   });
 }
+
