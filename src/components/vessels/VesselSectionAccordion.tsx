@@ -229,17 +229,41 @@ export const VesselSectionAccordion: React.FC<VesselSectionAccordionProps> = ({
                 </button>
               )}
               {section === 'VESSEL_COORDINATION' && (
-                <button
-                  onClick={() => {
-                    setEditingEntry(null);
-                    setInitialCategoryForModal('Damage Report');
-                    setModalOpen(true);
-                  }}
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-xs shrink-0 whitespace-nowrap cursor-pointer min-h-[44px] w-full sm:w-auto"
-                >
-                  <Plus className="w-4 h-4 stroke-[2.5]" />
-                  <span>+ Damage Report</span>
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      setEditingEntry(null);
+                      setInitialCategoryForModal('Master / Captain');
+                      setModalOpen(true);
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs bg-blue-700 hover:bg-blue-800 text-white transition-all shadow-xs shrink-0 whitespace-nowrap cursor-pointer min-h-[40px]"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2.5]" />
+                    <span>+ Master / Captain</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingEntry(null);
+                      setInitialCategoryForModal('Chief Officer');
+                      setModalOpen(true);
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs bg-indigo-700 hover:bg-indigo-800 text-white transition-all shadow-xs shrink-0 whitespace-nowrap cursor-pointer min-h-[40px]"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2.5]" />
+                    <span>+ Chief Officer</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingEntry(null);
+                      setInitialCategoryForModal('Crew Behavior & Attitude');
+                      setModalOpen(true);
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs bg-purple-700 hover:bg-purple-800 text-white transition-all shadow-xs shrink-0 whitespace-nowrap cursor-pointer min-h-[40px]"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2.5]" />
+                    <span>+ Crew Attitude</span>
+                  </button>
+                </>
               )}
               <button
                 onClick={() => {

@@ -63,13 +63,13 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
       setText(initialEntry.text || '');
       setSolution(initialEntry.solution || '');
       setSafetyStatus(initialEntry.safetyStatus || '');
-      setCategory(initialEntry.category || (section === 'REMARK' ? 'Gangway Safety' : section === 'VESSEL_COORDINATION' ? 'Vessel Officials Behavior' : ''));
+      setCategory(initialEntry.category || (section === 'REMARK' ? 'Gangway Safety' : section === 'VESSEL_COORDINATION' ? 'Master / Captain' : ''));
       setPhotos(initialEntry.photographs || []);
     } else {
       setText('');
       setSolution('');
       setSafetyStatus(initialSafetyStatus || (section === 'REMARK' ? 'SAFE' : ''));
-      setCategory(initialCategory || (section === 'REMARK' ? 'Gangway Safety' : section === 'VESSEL_COORDINATION' ? 'Vessel Officials Behavior' : ''));
+      setCategory(initialCategory || (section === 'REMARK' ? 'Gangway Safety' : section === 'VESSEL_COORDINATION' ? 'Master / Captain' : ''));
       setPhotos([]);
     }
     setError('');
@@ -132,8 +132,17 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (canEditText && !text.trim()) {
-      setError('Description comments are required.');
+
+    const effectiveCategory = (section === 'REMARK' || section === 'VESSEL_COORDINATION')
+      ? (category.trim() || (section === 'REMARK' ? 'Gangway Safety' : 'Master / Captain'))
+      : undefined;
+
+    const trimmedText = text.trim();
+    // Default text if empty but category is present, ensuring user is never blocked
+    const effectiveText = trimmedText || (effectiveCategory ? `${effectiveCategory} observation logged.` : '');
+
+    if (canEditText && !effectiveText) {
+      setError('Description comments or category selection is required.');
       return;
     }
 
@@ -143,14 +152,14 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
 
       if (canEditText) {
         await onSave({
-          text: text.trim(),
+          text: effectiveText,
           solution: solution.trim(),
           safetyStatus: section === 'REMARK' ? safetyStatus : undefined,
-          category: section === 'REMARK' ? (category.trim() || 'Gangway Safety') : undefined,
+          category: effectiveCategory,
           photographs: photos,
         });
       } else {
-        await onSave({ text: initialEntry?.text || text.trim(), photographs: photos });
+        await onSave({ text: initialEntry?.text || effectiveText, photographs: photos });
       }
       onClose();
     } catch (err: any) {
@@ -327,7 +336,6 @@ export const EntryFormModal: React.FC<EntryFormModalProps> = ({
                   ? 'Record notes regarding vessel officials behavior, attitude, cooperation during inspection/operation...'
                   : 'Enter detailed observation notes, maintenance actions taken, or inspection findings...'
               }
-              required={canEditText}
               className={`w-full p-3.5 border rounded-xl text-slate-900 text-sm focus:outline-none font-sans ${
                 !canEditText
                   ? 'bg-slate-100 border-slate-300 text-slate-600 cursor-not-allowed opacity-90'

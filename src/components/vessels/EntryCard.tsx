@@ -90,7 +90,17 @@ export const EntryCard: React.FC<EntryCardProps> = ({ entry, currentUser, onEdit
         {(entry.safetyStatus || entry.category) && (
           <div className="flex flex-wrap items-center gap-2 pb-1">
             {entry.category && (
-              <span className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-300 text-slate-800 font-extrabold text-[11px] uppercase tracking-wider">
+              <span className={`px-2.5 py-1 rounded-lg border font-extrabold text-[11px] uppercase tracking-wider ${
+                entry.category.toLowerCase().includes('master') || entry.category.toLowerCase().includes('captain')
+                  ? 'bg-blue-50 border-blue-300 text-blue-800'
+                  : entry.category.toLowerCase().includes('chief')
+                  ? 'bg-indigo-50 border-indigo-300 text-indigo-800'
+                  : entry.category.toLowerCase().includes('crew')
+                  ? 'bg-purple-50 border-purple-300 text-purple-800'
+                  : entry.category.toLowerCase().includes('damage')
+                  ? 'bg-rose-50 border-rose-300 text-rose-800'
+                  : 'bg-slate-100 border-slate-300 text-slate-800'
+              }`}>
                 {entry.category}
               </span>
             )}
