@@ -29,6 +29,7 @@ const VesselSchema: Schema = new Schema<IVesselDocument>(
     keelToDeck: { type: String, default: '' },
     numberOfBays: { type: String, default: '' },
     numberOfRows: { type: String, default: '' },
+    numberOfCargoHolds: { type: String, default: '' },
     lashingBridges: { type: String, default: '' },
     lashingBridgeHeight: { type: String, default: '' },
     basicInformation: { type: String, default: '' },

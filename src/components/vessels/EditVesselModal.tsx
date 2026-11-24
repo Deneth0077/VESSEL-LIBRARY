@@ -31,6 +31,7 @@ export const EditVesselModal: React.FC<EditVesselModalProps> = ({
   const [keelToDeck, setKeelToDeck] = useState(vessel.keelToDeck || '');
   const [numberOfBays, setNumberOfBays] = useState(vessel.numberOfBays || '');
   const [numberOfRows, setNumberOfRows] = useState(vessel.numberOfRows || '');
+  const [numberOfCargoHolds, setNumberOfCargoHolds] = useState(vessel.numberOfCargoHolds || '');
   const [lashingBridges, setLashingBridges] = useState<'Yes' | 'No' | ''>(vessel.lashingBridges || '');
   const [lashingBridgeHeight, setLashingBridgeHeight] = useState(vessel.lashingBridgeHeight || '');
 
@@ -52,6 +53,7 @@ export const EditVesselModal: React.FC<EditVesselModalProps> = ({
       setKeelToDeck(vessel.keelToDeck || '');
       setNumberOfBays(vessel.numberOfBays || '');
       setNumberOfRows(vessel.numberOfRows || '');
+      setNumberOfCargoHolds(vessel.numberOfCargoHolds || '');
       setLashingBridges(vessel.lashingBridges || '');
       setLashingBridgeHeight(vessel.lashingBridgeHeight || '');
       setBasicInformation(vessel.basicInformation || '');
@@ -94,6 +96,7 @@ export const EditVesselModal: React.FC<EditVesselModalProps> = ({
           keelToDeck: keelToDeck.trim(),
           numberOfBays: numberOfBays.trim(),
           numberOfRows: numberOfRows.trim(),
+          numberOfCargoHolds: numberOfCargoHolds.trim(),
           lashingBridges,
           lashingBridgeHeight: lashingBridges === 'Yes' ? lashingBridgeHeight : '',
           basicInformation: basicInformation.trim(),
@@ -291,6 +294,17 @@ export const EditVesselModal: React.FC<EditVesselModalProps> = ({
                   value={numberOfRows}
                   onChange={(e) => setNumberOfRows(e.target.value)}
                   placeholder="e.g. 13"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Number of Cargo Holds</label>
+                <input
+                  type="text"
+                  value={numberOfCargoHolds}
+                  onChange={(e) => setNumberOfCargoHolds(e.target.value)}
+                  placeholder="e.g. 7"
                   className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800"
                 />
               </div>

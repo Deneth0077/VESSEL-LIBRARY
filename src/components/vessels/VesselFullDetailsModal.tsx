@@ -222,7 +222,7 @@ export const VesselFullDetailsModal: React.FC<VesselFullDetailsModalProps> = ({
               </div>
 
               {/* Technical Dimensions Sub-Grid */}
-              {(vessel.loa || vessel.beam || vessel.keelToDeck || vessel.numberOfBays || vessel.numberOfRows || vessel.lashingBridges) && (
+              {(vessel.loa || vessel.beam || vessel.keelToDeck || vessel.numberOfBays || vessel.numberOfRows || vessel.numberOfCargoHolds || vessel.lashingBridges) && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 bg-slate-50/70 p-4 gap-3 border-t border-slate-200">
                   {vessel.loa && (
                     <div>
@@ -252,6 +252,12 @@ export const VesselFullDetailsModal: React.FC<VesselFullDetailsModalProps> = ({
                     <div>
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block font-mono">NUMBER OF ROWS</span>
                       <span className="font-bold text-slate-800 text-xs mt-0.5 block">{vessel.numberOfRows}</span>
+                    </div>
+                  )}
+                  {vessel.numberOfCargoHolds && (
+                    <div>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block font-mono">CARGO HOLDS</span>
+                      <span className="font-bold text-slate-800 text-xs mt-0.5 block">{vessel.numberOfCargoHolds}</span>
                     </div>
                   )}
                   {vessel.lashingBridges && (

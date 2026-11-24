@@ -226,7 +226,7 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
         </div>
 
         {/* Technical Dimensions & Cargo Specs Sub-Grid */}
-        {(vessel.loa || vessel.beam || vessel.keelToDeck || vessel.numberOfBays || vessel.numberOfRows || vessel.lashingBridges) && (
+        {(vessel.loa || vessel.beam || vessel.keelToDeck || vessel.numberOfBays || vessel.numberOfRows || vessel.numberOfCargoHolds || vessel.lashingBridges) && (
           <div className="p-3.5 bg-slate-50/80 border-t border-slate-200 space-y-2">
             <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-navy-900 uppercase tracking-widest">
               <Ruler className="w-3.5 h-3.5 text-ocean-600" />
@@ -262,6 +262,12 @@ export const BasicInformation: React.FC<BasicInformationProps> = ({ vessel, curr
                 <div className="bg-white p-2 rounded-lg border border-slate-200">
                   <span className="text-[9px] font-bold text-slate-400 uppercase block">Number of Rows</span>
                   <span className="font-bold text-slate-800">{vessel.numberOfRows}</span>
+                </div>
+              )}
+              {vessel.numberOfCargoHolds && (
+                <div className="bg-white p-2 rounded-lg border border-slate-200">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase block">Cargo Holds</span>
+                  <span className="font-bold text-slate-800">{vessel.numberOfCargoHolds}</span>
                 </div>
               )}
               {vessel.lashingBridges && (

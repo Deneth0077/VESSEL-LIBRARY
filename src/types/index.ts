@@ -49,6 +49,7 @@ export interface IVessel {
   keelToDeck?: string;
   numberOfBays?: string;
   numberOfRows?: string;
+  numberOfCargoHolds?: string;
   lashingBridges?: 'Yes' | 'No' | '';
   lashingBridgeHeight?: string;
   basicInformation?: string;

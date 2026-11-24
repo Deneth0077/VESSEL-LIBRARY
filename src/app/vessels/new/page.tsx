@@ -25,6 +25,7 @@ export default function CreateVesselPage() {
   const [keelToDeck, setKeelToDeck] = useState('');
   const [numberOfBays, setNumberOfBays] = useState('');
   const [numberOfRows, setNumberOfRows] = useState('');
+  const [numberOfCargoHolds, setNumberOfCargoHolds] = useState('');
   const [lashingBridges, setLashingBridges] = useState<'Yes' | 'No' | ''>('');
   const [lashingBridgeHeight, setLashingBridgeHeight] = useState('');
   const [basicInformation, setBasicInformation] = useState('');
@@ -99,6 +100,7 @@ export default function CreateVesselPage() {
           keelToDeck: keelToDeck.trim(),
           numberOfBays: numberOfBays.trim(),
           numberOfRows: numberOfRows.trim(),
+          numberOfCargoHolds: numberOfCargoHolds.trim(),
           lashingBridges,
           lashingBridgeHeight: lashingBridges === 'Yes' ? lashingBridgeHeight : '',
           basicInformation: basicInformation.trim(),
@@ -317,6 +319,19 @@ export default function CreateVesselPage() {
                 value={numberOfRows}
                 onChange={(e) => setNumberOfRows(e.target.value)}
                 placeholder="e.g. 13"
+                className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-navy-900 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600 min-h-[44px]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Number of Cargo Holds
+              </label>
+              <input
+                type="text"
+                value={numberOfCargoHolds}
+                onChange={(e) => setNumberOfCargoHolds(e.target.value)}
+                placeholder="e.g. 7"
                 className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-navy-900 text-sm focus:outline-none focus:ring-2 focus:ring-navy-600 min-h-[44px]"
               />
             </div>

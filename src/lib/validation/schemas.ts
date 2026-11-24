@@ -45,6 +45,7 @@ export const vesselSchema = z.object({
   keelToDeck: z.string().optional(),
   numberOfBays: z.string().optional(),
   numberOfRows: z.string().optional(),
+  numberOfCargoHolds: z.string().optional(),
   lashingBridges: z.string().optional(),
   lashingBridgeHeight: z.string().optional(),
   basicInformation: z.string().optional(),
