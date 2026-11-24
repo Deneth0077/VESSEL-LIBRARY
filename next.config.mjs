@@ -17,12 +17,6 @@ const nextConfig = {
       },
     ],
   },
-  webpack: (config) => {
-    config.watchOptions = {
-      ignored: ['**/node_modules', '**/.git', '**/.next'],
-    };
-    return config;
-  },
   async rewrites() {
     return [
       {

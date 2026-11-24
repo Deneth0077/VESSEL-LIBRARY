@@ -14,6 +14,21 @@ export const PWAInstallPrompt: React.FC = () => {
   useEffect(() => {
     // 1. Register Service Worker for PWA (Mandatory for Android WebAPK install)
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // In local development, unregister any service worker to avoid webpack chunk cache collisions
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const reg of registrations) {
+            reg.unregister();
+          }
+        });
+        if ('caches' in window) {
+          caches.keys().then((keys) => {
+            keys.forEach((key) => caches.delete(key));
+          });
+        }
+        return;
+      }
+
       navigator.serviceWorker
         .register('/sw.js')
         .then((reg) => {

@@ -1,5 +1,5 @@
 // VESSEL LIBRARY Service Worker for Android (All Versions) & iOS PWA
-const CACHE_NAME = 'vessel-lib-cache-v3';
+const CACHE_NAME = 'vessel-lib-cache-v4';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -42,6 +42,11 @@ self.addEventListener('activate', (event) => {
 // Fetch Event - Network-first for dynamic API routes, Cache-first / Stale-while-revalidate for static files
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+
+  // In local development, never intercept or cache
+  if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+    return;
+  }
 
   // Ignore non-HTTP / non-GET requests
   if (event.request.method !== 'GET' || !url.protocol.startsWith('http')) {
