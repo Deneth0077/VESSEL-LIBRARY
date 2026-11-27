@@ -4,6 +4,7 @@ import './globals.css';
 import Header from '@/components/layout/Header';
 import { PWAInstallPrompt } from '@/components/ui/PWAInstallPrompt';
 import { AuthProvider } from '@/context/AuthContext';
+import { Analytics } from '@vercel/analytics/next';
 
 const publicSans = Public_Sans({
   subsets: ['latin'],
@@ -64,6 +65,7 @@ export default function RootLayout({
           {/* Mobile PWA Add to Home Screen Banner Prompt */}
           <PWAInstallPrompt />
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
